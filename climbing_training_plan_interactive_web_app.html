@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="th" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบการฝึกซ้อมปีนผาแบบมอดูลาร์ (Modular Climbing Training System)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts: Sarabun & Kanit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sand: {
+                            50: '#fdfbf7',
+                            100: '#f7f3eb',
+                            200: '#efe6d5',
+                            300: '#e2d3b7',
+                            800: '#544736',
+                            900: '#382f23',
+                        },
+                        terracotta: {
+                            500: '#d96b43',
+                            600: '#c2542d',
+                            700: '#9e3f1f',
+                        },
+                        slatecustom: {
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        olive: {
+                            600: '#65743b',
+                            700: '#4d592b',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Sarabun', 'sans-serif'],
+                        heading: ['Kanit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #fdfbf7;
+            color: #1e293b;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 360px;
+            }
+        }
+        .tab-btn.active {
+            border-bottom-color: #d96b43;
+            color: #d96b43;
+            font-weight: 600;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #efe6d5;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d96b43;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-slate-800 leading-relaxed min-h-screen flex flex-col">
+
+    <!-- Chosen Palette: Warm Neutral Harmony (Warm Sand background #fdfbf7, Deep Slate #1e293b text/headers, Terracotta #d96b43 dynamic accents, Muted Olive #65743b highlights) -->
+    <!-- Application Structure Plan: Designed as an interactive single-page app (SPA) structured into 5 cohesive interactive sections: 
+         1. Athlete Profile & Biomechanical Diagnostics (Interactive radar & safety limits overview).
+         2. Modular System Hub (Interactive grid of Modules A-F with filters and details modal).
+         3. Dynamic Weekly Schedule & Rule Engine (Interactive day-by-day scheduler showing precise physiological sequencing).
+         4. 12-Week Periodization Macrocycle Chart (Chart.js dynamic chart tracking volume, intensity, and deload blocks).
+         5. Practical Interactive Training Tools (Hangboard Submaximal RPE Timer/Calculator + Hip PNF Stretch Interactive Guide).
+         This structure translates complex exercise physiology into an intuitive, executable web dashboard tailored for the user's progress. -->
+    <!-- Visualization & Content Choices:
+         - Profile Radar Chart: Chart.js Radar to visually compare current status vs target balance across strength, mobility, endurance, and injury resistance without SVG.
+         - Modular Cards: Responsive Tailwind HTML grid with Vanilla JS filtering by type (Warmup, Strength, Skill, Endurance, Mobility, Conditioning).
+         - Weekly Matrix: Interactive HTML button grid with dynamic detail panel updating on click, highlighting module sequencing logic (e.g. why B comes before C/D).
+         - Macrocycle Load Chart: Chart.js Line/Bar combination chart showing 12-week progression with Deload drops on Week 6 and 12.
+         - Interactive Timers: Vanilla JS countdown timer with acoustic/visual feedback for 10s Density Hangs and PNF 7s/30s cycles.
+         - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. Canvas and HTML/CSS elements used exclusively. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-40 bg-sand-50/95 backdrop-blur-md border-b border-sand-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">🧗</span>
+                <div>
+                    <h1 class="font-heading font-bold text-lg md:text-xl text-slatecustom-800 leading-tight">ClimbFit Modular</h1>
+                    <p class="text-xs text-slate-500">ระบบฝึกซ้อมปีนผาเฉพาะบุคคล (Boulder & Lead)</p>
+                </div>
+            </div>
+            <nav class="hidden md:flex space-x-6 text-sm font-medium">
+                <a href="#profile" class="hover:text-terracotta-500 transition-colors">วิเคราะห์ชีวกลศาสตร์</a>
+                <a href="#modules" class="hover:text-terracotta-500 transition-colors">มอดูลการฝึก (A-F)</a>
+                <a href="#schedule" class="hover:text-terracotta-500 transition-colors">ตารางซ้อมประจำสัปดาห์</a>
+                <a href="#periodization" class="hover:text-terracotta-500 transition-colors">วงรอบ 12 สัปดาห์</a>
+                <a href="#tools" class="hover:text-terracotta-500 transition-colors">เครื่องมือคำนวณ & ไทม์เมอร์</a>
+            </nav>
+            <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg bg-sand-200 text-slate-700 hover:bg-sand-300">
+                ☰
+            </button>
+        </div>
+        <!-- Mobile Navigation Menu -->
+        <div id="mobileMenu" class="hidden md:hidden bg-sand-100 border-b border-sand-200 px-4 pt-2 pb-4 space-y-2 text-sm font-medium">
+            <a href="#profile" class="block py-2 hover:text-terracotta-500">วิเคราะห์ชีวกลศาสตร์</a>
+            <a href="#modules" class="block py-2 hover:text-terracotta-500">มอดูลการฝึก (A-F)</a>
+            <a href="#schedule" class="block py-2 hover:text-terracotta-500">ตารางซ้อมประจำสัปดาห์</a>
+            <a href="#periodization" class="block py-2 hover:text-terracotta-500">วงรอบ 12 สัปดาห์</a>
+            <a href="#tools" class="block py-2 hover:text-terracotta-500">เครื่องมือคำนวณ & ไทม์เมอร์</a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- SECTION 1: ATHLETE DIAGNOSTIC & BIOMECHANICS -->
+        <section id="profile" class="scroll-mt-20">
+            <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
+                <div class="border-b border-sand-200 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                            ข้อมูลนักกีฬา & การประเมินทางสรีรวิทยา
+                        </span>
+                        <h2 class="font-heading font-bold text-2xl text-slatecustom-800">ผลการวิเคราะห์ชีวกลศาสตร์ & สภาพร่างกาย</h2>
+                    </div>
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <span class="px-3 py-1.5 bg-sand-100 text-slate-700 rounded-lg font-medium">👨 เพศชาย (27 ปี)</span>
+                        <span class="px-3 py-1.5 bg-sand-100 text-slate-700 rounded-lg font-medium">⚖️ น้ำหนัก 75 kg</span>
+                        <span class="px-3 py-1.5 bg-sand-100 text-slate-700 rounded-lg font-medium">📊 ไขมัน 18%</span>
+                        <span class="px-3 py-1.5 bg-sand-100 text-slate-700 rounded-lg font-medium">⏱️ ประสบการณ์ 1 ปี 7 เดือน</span>
+                    </div>
+                </div>
+
+                <p class="text-slate-600 text-sm md:text-base leading-relaxed">
+                    การวิเคราะห์นี้สร้างขึ้นเพื่อแก้ไขจุดจำกัดเชิงโครงสร้างของนักปีนผาระดับพัฒนาการ โดยเน้นการสร้างความสมดุลระหว่างความแข็งแรงของนิ้วมือ ความยืดหยุ่นของสะโพก และการป้องกันการบาดเจ็บสะสมในเอ็นข้อต่อ A2/A4 Pulley ภายใต้น้ำหนักตัว 75 กิโลกรัม
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <!-- Radar Diagnostic Chart -->
+                    <div class="lg:col-span-6 bg-sand-50 p-4 rounded-xl border border-sand-200">
+                        <h3 class="font-heading font-semibold text-base text-slatecustom-800 mb-2 text-center">
+                            สมดุลศักยภาพปัจจุบัน vs เป้าหมายการพัฒนา
+                        </h3>
+                        <div class="chart-container">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Physiological Insights Cards -->
+                    <div class="lg:col-span-6 space-y-4">
+                        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200">
+                            <div class="flex items-start space-x-3">
+                                <span class="text-xl">⚠️</span>
+                                <div>
+                                    <h4 class="font-heading font-semibold text-amber-900 text-sm md:text-base">ข้อจำกัดเรื่องนิ้วมือ & เอ็นข้อต่อ (Finger & Pulley Load)</h4>
+                                    <p class="text-xs md:text-sm text-amber-800 mt-1">
+                                        เอ็นกล้ามเนื้อและปลอกรัด A2/A4 ปรับตัวช้ากว่ากล้ามเนื้อลายมาก ด้วยน้ำหนัก 75 kg ห้ามใช้ Max Hangs หนักเกินไป หรือ Campus Board <strong>ต้องฝึกแบบ Submaximal (RPE 7-8) บนขอบ 20mm</strong> เพื่อกระตุ้นคอลลาเจนอย่างปลอดภัย
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-blue-50 border border-blue-200">
+                            <div class="flex items-start space-x-3">
+                                <span class="text-xl">📐</span>
+                                <div>
+                                    <h4 class="font-heading font-semibold text-blue-900 text-sm md:text-base">กลไกสะโพกต่อแรงบิดที่นิ้ว (Hip Mobility Biomechanics)</h4>
+                                    <p class="text-xs md:text-sm text-blue-800 mt-1">
+                                        การขาด Hip External Rotation ทำให้สะโพกเด้งออกห่างจากผนัง เพิ่มแรงดึงตกกระทบที่นิ้วมือโดยตรง การเพิ่มความยืดหยุ่นสะโพกจะดึงจุดศูนย์ถ่วง (Center of Gravity) เข้าใกล้ผนัง ช่วยผ่อนแรงนิ้วทันที
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+                            <div class="flex items-start space-x-3">
+                                <span class="text-xl">🎯</span>
+                                <div>
+                                    <h4 class="font-heading font-semibold text-emerald-900 text-sm md:text-base">การผสาน Bouldering & Lead (Dual Goal Balance)</h4>
+                                    <p class="text-xs md:text-sm text-emerald-800 mt-1">
+                                        แยกสติมิวลัสชัดเจน: Bouldering มุ่งเน้นระบบพลังงาน ATP-CP และการเกณฑ์กำลังประสาท ส่วน Lead มุ่งเน้นความทนทานต่อกรดแลกติก (Power Endurance) และทักษะ Micro-Shakes
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: MODULAR SYSTEM HUB -->
+        <section id="modules" class="scroll-mt-20">
+            <div class="space-y-6">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                            ระบบการฝึกอิสระ
+                        </span>
+                        <h2 class="font-heading font-bold text-2xl text-slatecustom-800">คลังมอดูลการฝึกซ้อม (Modules A - F)</h2>
+                        <p class="text-slate-600 text-sm mt-1">เลือกมอดูลไปจัดสัดส่วนการซ้อมรายวันตามเวลาที่มี และเป้าหมายเฉพาะจุด</p>
+                    </div>
+
+                    <!-- Module Category Filters -->
+                    <div class="flex flex-wrap gap-1.5 bg-sand-100 p-1 rounded-xl text-xs font-medium border border-sand-200">
+                        <button class="mod-filter active px-3 py-1.5 rounded-lg bg-white shadow-sm text-slate-800" data-filter="all">ทั้งหมด</button>
+                        <button class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="prep">วอร์มอัพ/เตรียมความพร้อม</button>
+                        <button class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="strength">นิ้ว/กำลัง</button>
+                        <button class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="climb">ปีนจริง (B/L)</button>
+                        <button class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="mobility">สะโพก/ฟื้นฟู</button>
+                    </div>
+                </div>
+
+                <!-- Modules Grid -->
+                <div id="modulesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Module Cards injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: WEEKLY SCHEDULE & STIMULUS LOGIC -->
+        <section id="schedule" class="scroll-mt-20">
+            <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
+                <div>
+                    <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                        โครงสร้างการจัดวันซ้อม
+                    </span>
+                    <h2 class="font-heading font-bold text-2xl text-slatecustom-800">ตารางซ้อมประจำสัปดาห์ & กฎการเรียงสติมิวลัส</h2>
+                    <p class="text-slate-600 text-sm mt-1">
+                        การเรียงมอดูลต้องทำตามลำดับทางสรีรวิทยาอย่างเคร่งครัดเพื่อป้องกันความล้าของระบบประสาทส่วนกลาง และป้องกันบาดเจ็บ
+                    </p>
+                </div>
+
+                <!-- Weekly Day Selector Tabs -->
+                <div class="flex overflow-x-auto custom-scrollbar border-b border-sand-200 space-x-2 pb-2">
+                    <button class="day-tab active px-4 py-2.5 font-heading font-medium text-sm whitespace-nowrap border-b-2 border-terracotta-500 text-terracotta-600" data-day="mon">
+                        จันทร์: Boulder & Finger
+                    </button>
+                    <button class="day-tab px-4 py-2.5 font-heading font-medium text-sm whitespace-nowrap text-slate-500 border-b-2 border-transparent hover:text-slate-800" data-day="tue">
+                        อังคาร: Mobility Session
+                    </button>
+                    <button class="day-tab px-4 py-2.5 font-heading font-medium text-sm whitespace-nowrap text-slate-500 border-b-2 border-transparent hover:text-slate-800" data-day="wed">
+                        พุธ: Lead & Power Endurance
+                    </button>
+                    <button class="day-tab px-4 py-2.5 font-heading font-medium text-sm whitespace-nowrap text-slate-500 border-b-2 border-transparent hover:text-slate-800" data-day="thu">
+                        พฤหัสบดี: Full Rest Day
+                    </button>
+                    <button class="day-tab px-4 py-2.5 font-heading font-medium text-sm whitespace-nowrap text-slate-500 border-b-2 border-transparent hover:text-slate-800" data-day="fri">
+                        ศุกร์: Technique & Mobility
+                    </button>
+                    <button class="day-tab px-4 py-2.5 font-heading font-medium text-sm whitespace-nowrap text-slate-500 border-b-2 border-transparent hover:text-slate-800" data-day="sat">
+                        เสาร์: Full Rest / Outdoor
+                    </button>
+                    <button class="day-tab px-4 py-2.5 font-heading font-medium text-sm whitespace-nowrap text-slate-500 border-b-2 border-transparent hover:text-slate-800" data-day="sun">
+                        อาทิตย์: Mobility Session
+                    </button>
+                </div>
+
+                <!-- Dynamic Day Detail View -->
+                <div id="dayDetailPanel" class="bg-sand-50 p-6 rounded-xl border border-sand-200 space-y-6">
+                    <!-- Dynamic content injected by JS -->
+                </div>
+
+                <!-- Stimulus Sequencing Rules Banner -->
+                <div class="p-4 bg-slatecustom-800 text-white rounded-xl space-y-3">
+                    <h3 class="font-heading font-semibold text-base flex items-center gap-2">
+                        <span>🧠</span> กฎเหล็กทางสรีรวิทยาในการเรียงมอดูล (Stimulus Sequencing Rules)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
+                        <div class="p-3 bg-slatecustom-700/50 rounded-lg">
+                            <span class="font-bold text-amber-400 block mb-1">1. Module B (ฝึกนิ้ว) ต้องมาก่อน C/D เสมอ</span>
+                            การฝึกนิ้วต้องการระบบประสาทสดใหม่ หากฝึกหลังการปีน แรงจับที่ลดลงจะทำให้เกิดการชดเชยด้วยนิ้วที่ผิดรูป เสี่ยงต่อเอ็น A2 ฉีกขาดสูงมาก
+                        </div>
+                        <div class="p-3 bg-slatecustom-700/50 rounded-lg">
+                            <span class="font-bold text-amber-400 block mb-1">2. ห้ามจัด Limit Boulder + Lead Endurance วันเดียวกัน</span>
+                            ระบบประสาทและระบบพลังงาน ATP-CP ขัดแย้งกับการฝึกกรดแลกติก การรวมกันจะทำให้ร่างกายปรับตัวได้ไม่สมบูรณ์สักด้าน (Stimulus Interference)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: 12-WEEK MACROCYCLE PERIODIZATION -->
+        <section id="periodization" class="scroll-mt-20">
+            <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                            การวางแผนระยะยาว
+                        </span>
+                        <h2 class="font-heading font-bold text-2xl text-slatecustom-800">กราฟภาระการฝึกซ้อม 12 สัปดาห์ (Macrocycle)</h2>
+                        <p class="text-slate-600 text-sm mt-1">แบ่งออกเป็น 2 Mesocycles (6 สัปดาห์/รอบ) โดยมี Deload Week ช่วยให้เนื้อเยื่อเกี่ยวพันซ่อมแซมสังเคราะห์คอลลาเจน</p>
+                    </div>
+
+                    <div class="flex items-center space-x-2 text-xs font-medium">
+                        <button id="toggleVolumeBtn" class="px-3 py-1.5 bg-terracotta-500 text-white rounded-lg shadow-sm">แสดงปริมาณงาน (Volume)</button>
+                        <button id="toggleIntensityBtn" class="px-3 py-1.5 bg-sand-200 text-slate-700 rounded-lg hover:bg-sand-300">แสดงความเข้มข้น (Intensity)</button>
+                    </div>
+                </div>
+
+                <!-- Chart Container -->
+                <div class="bg-sand-50 p-4 rounded-xl border border-sand-200">
+                    <div class="chart-container">
+                        <canvas id="macrocycleChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Phase Details Table -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                    <div class="p-4 bg-sand-100 rounded-xl border border-sand-200">
+                        <span class="font-bold text-terracotta-600 block text-sm mb-1">Block 1 (สัปดาห์ 1-5)</span>
+                        <p class="text-slate-600">เน้น Strength, Technique Bouldering และการปรับปรุง Hip Mobility พื้นฐาน</p>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                        <span class="font-bold text-amber-700 block text-sm mb-1">Deload 1 (สัปดาห์ที่ 6)</span>
+                        <p class="text-amber-800">ลดปริมาณงานลง 50% งดฝึกนิ้วหนัก เพื่อให้คอลลาเจนในเอ็นข้อต่อฟื้นตัวเต็มที่</p>
+                    </div>
+                    <div class="p-4 bg-sand-100 rounded-xl border border-sand-200">
+                        <span class="font-bold text-terracotta-600 block text-sm mb-1">Block 2 (สัปดาห์ 7-11)</span>
+                        <p class="text-slate-600">ย้ายโฟกัสไปที่ Power Endurance (4x4s), Double Route Laps บน Lead Wall</p>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200">
+                        <span class="font-bold text-amber-700 block text-sm mb-1">Deload 2 (สัปดาห์ที่ 12)</span>
+                        <p class="text-amber-800">ลดภาระงาน 50% เตรียมพร้อมสำหรับการทดสอบส่งเกรดใหม่ (Peak Performance)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 5: PRACTICAL INTERACTIVE TOOLS -->
+        <section id="tools" class="scroll-mt-20">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Tool 1: Submaximal Finger Loading Guide & Timer -->
+                <div class="lg:col-span-6 bg-white rounded-2xl p-6 border border-sand-200 shadow-sm space-y-6">
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                            เครื่องมือ Module B
+                        </span>
+                        <h3 class="font-heading font-bold text-xl text-slatecustom-800">เครื่องคำนวณภาระนิ้ว & ไทม์เมอร์ 20mm</h3>
+                        <p class="text-xs text-slate-500 mt-1">คำนวณการผ่อนแรง/ถ่วงน้ำหนักสำหรับ Density Hangs (10 วินาที ค้าง)</p>
+                    </div>
+
+                    <!-- Calculator Input -->
+                    <div class="bg-sand-50 p-4 rounded-xl border border-sand-200 space-y-3 text-xs">
+                        <div class="flex items-center justify-between">
+                            <label class="font-semibold text-slate-700">น้ำหนักตัว (kg):</label>
+                            <input type="number" id="userBW" value="75" class="w-20 px-2 py-1 bg-white border border-sand-300 rounded text-center font-bold text-slate-800">
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <label class="font-semibold text-slate-700">ระดับความรู้สึกตึง (Target RPE):</label>
+                            <select id="rpeSelect" class="px-2 py-1 bg-white border border-sand-300 rounded text-slate-800 font-medium">
+                                <option value="0.8">RPE 7-8 (แนะนำ - Submaximal)</option>
+                                <option value="0.9">RPE 9 (ความเสี่ยงสูงขึ้น)</option>
+                            </select>
+                        </div>
+                        <div class="p-3 bg-terracotta-500/10 rounded-lg text-terracotta-700 font-medium flex justify-between items-center">
+                            <span>ประมาณการแรงดึงที่ปลอดภัย:</span>
+                            <span id="targetHangWeight" class="text-base font-bold">60.0 kg (ช่วยยันเท้า ~15 kg)</span>
+                        </div>
+                    </div>
+
+                    <!-- Hangboard Interactive Timer -->
+                    <div class="text-center p-6 bg-slatecustom-800 rounded-xl text-white space-y-4">
+                        <div id="hangStatus" class="text-sm font-medium tracking-wide uppercase text-amber-400">พร้อมเริ่มต้น (Density Hang 10s)</div>
+                        <div id="hangTimerDisplay" class="font-heading text-5xl font-bold tracking-tight">10.0s</div>
+                        
+                        <div class="flex justify-center space-x-3 text-xs font-semibold">
+                            <button id="startHangBtn" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 rounded-lg text-white shadow-md transition-transform active:scale-95">
+                                ▶️ เริ่มโหนนิ้ว (10s)
+                            </button>
+                            <button id="resetHangBtn" class="px-4 py-2.5 bg-slatecustom-700 hover:bg-slatecustom-600 rounded-lg text-slate-300">
+                                🔄 รีเซ็ต
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-slate-400">รูปการจับที่อนุญาต: Half Crimp (90°) หรือ Open Drag ห้ามใช้ Full Crimp เด็ดขาด</p>
+                    </div>
+                </div>
+
+                <!-- Tool 2: Hip Mobility & PNF Protocol Guide -->
+                <div class="lg:col-span-6 bg-white rounded-2xl p-6 border border-sand-200 shadow-sm space-y-6">
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-olive-600/10 text-olive-700 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                            เครื่องมือ Module E
+                        </span>
+                        <h3 class="font-heading font-bold text-xl text-slatecustom-800">คู่มือ & ไทม์เมอร์ยืดสะโพก PNF (Frog Stretch)</h3>
+                        <p class="text-xs text-slate-500 mt-1">กระตุ้น Autogenic Inhibition ผ่าน Golgi Tendon Organ เพื่อเปิดมุมสะโพก</p>
+                    </div>
+
+                    <!-- PNF Protocol Breakdown -->
+                    <div class="space-y-2 text-xs">
+                        <div class="p-3 bg-sand-50 rounded-lg border border-sand-200 flex justify-between items-center">
+                            <span class="font-bold text-slate-700">1. Stretch Phase (เตรียม):</span>
+                            <span class="text-slate-600">ยืดต้นขาด้านในจนรู้สึกตึงต้าน</span>
+                        </div>
+                        <div class="p-3 bg-amber-50 rounded-lg border border-amber-200 flex justify-between items-center">
+                            <span class="font-bold text-amber-800">2. Contract Phase (7 วินาที):</span>
+                            <span class="text-amber-800">เกร็งหนีบเข่ากดลงพื้น 70% Force</span>
+                        </div>
+                        <div class="p-3 bg-emerald-50 rounded-lg border border-emerald-200 flex justify-between items-center">
+                            <span class="font-bold text-emerald-800">3. Relax & Deepen (30 วินาที):</span>
+                            <span class="text-emerald-800">ผ่อนคลายความเกร็ง ทิ้งสะโพกลึกลงมุมใหม่</span>
+                        </div>
+                    </div>
+
+                    <!-- PNF Interactive Timer -->
+                    <div class="text-center p-6 bg-slatecustom-800 rounded-xl text-white space-y-4">
+                        <div id="pnfStatus" class="text-sm font-medium tracking-wide uppercase text-emerald-400">พร้อมสำหรับ Frog Stretch PNF</div>
+                        <div id="pnfTimerDisplay" class="font-heading text-5xl font-bold tracking-tight">07s</div>
+                        
+                        <div class="flex justify-center space-x-3 text-xs font-semibold">
+                            <button id="startPnfBtn" class="px-5 py-2.5 bg-olive-600 hover:bg-olive-700 rounded-lg text-white shadow-md transition-transform active:scale-95">
+                                ▶️ เริ่มต้น PNF Cycle
+                            </button>
+                            <button id="resetPnfBtn" class="px-4 py-2.5 bg-slatecustom-700 hover:bg-slatecustom-600 rounded-lg text-slate-300">
+                                🔄 รีเซ็ต
+                            </button>
+                        </div>
+                        <p class="text-[11px] text-slate-400">ทำทั้งหมด 3 รอบต่อเซสชัน โดยพัก 45 วินาทีระหว่างรอบ</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal for Module Details -->
+    <div id="moduleModal" class="fixed inset-0 bg-slatecustom-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 md:p-8 space-y-6 shadow-xl border border-sand-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-start justify-between border-b border-sand-200 pb-4">
+                <div class="flex items-center space-x-3">
+                    <span id="modalCode" class="px-3 py-1 bg-terracotta-500 text-white font-bold rounded-lg text-sm">Mod A</span>
+                    <div>
+                        <h3 id="modalTitle" class="font-heading font-bold text-xl text-slatecustom-800">Warm-Up & Dynamic Activation</h3>
+                        <p id="modalDuration" class="text-xs text-slate-500">ระยะเวลา: 15-20 นาที</p>
+                    </div>
+                </div>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
+            </div>
+
+            <div class="space-y-4 text-xs md:text-sm text-slate-600">
+                <div>
+                    <h4 class="font-heading font-bold text-slatecustom-800 text-sm mb-1">วัตถุประสงค์ทางสรีรวิทยา:</h4>
+                    <p id="modalPhysio" class="bg-sand-50 p-3 rounded-lg border border-sand-200 text-slate-700"></p>
+                </div>
+
+                <div>
+                    <h4 class="font-heading font-bold text-slatecustom-800 text-sm mb-1">อุปกรณ์ที่จำเป็น:</h4>
+                    <p id="modalEquip" class="font-medium text-slate-800"></p>
+                </div>
+
+                <div>
+                    <h4 class="font-heading font-bold text-slatecustom-800 text-sm mb-1">ขั้นตอนปฏิบัติอย่างเป็นระบบ:</h4>
+                    <ul id="modalSteps" class="list-disc pl-5 space-y-2"></ul>
+                </div>
+
+                <div id="modalCautionBox" class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-xs">
+                    <strong class="block mb-1">ข้อควรระวังสำคัญ:</strong>
+                    <span id="modalCaution"></span>
+                </div>
+            </div>
+
+            <div class="text-right border-t border-sand-200 pt-4">
+                <button id="closeModalBottomBtn" class="px-5 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-lg font-medium text-xs">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slatecustom-900 text-slate-400 py-8 border-t border-slatecustom-800 text-xs">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+                <p class="font-heading font-semibold text-slate-200">แผนการฝึกซ้อมปีนผาแบบมอดูลาร์ (Modular Climbing System)</p>
+                <p class="mt-1 text-slate-500">ออกแบบสำหรับนักปีนระดับพัฒนาการ (อายุ 27 ปี, 75 กก., Bouldering & Lead Goal)</p>
+            </div>
+            <p class="text-slate-500 text-center md:text-right">
+                *ข้อมูลนี้มีวัตถุประสงค์เพื่อการศึกษาและการฝึกซ้อมกีฬา ไม่ใช่คำแนะนำทางการแพทย์
+            </p>
+        </div>
+    </footer>
+
+    <!-- Embedded Application Logic -->
+    <script>
+        // Data Store
+        const modulesData = [
+            {
+                id: 'modA',
+                code: 'Module A',
+                title: 'Warm-Up & Dynamic Activation',
+                category: 'prep',
+                duration: '15–20 นาที',
+                equip: 'ยางยืด Resistance band, ผนังปีนระดับง่าย',
+                physio: 'เตรียมระบบประสาท เพิ่มอุณหภูมิในกล้ามเนื้อ กระตุ้นการหลั่งน้ำไขข้อ (Synovial Fluid) ในข้อต่อไหล่และสะโพก',
+                steps: [
+                    'Cardio Light Warmup (5 นาที): วิ่งเหยาะๆ หรือกระโดดเชือกเบาๆ ให้หัวใจเต้นสม่ำเสมอ',
+                    'Dynamic Mobilization: หมุนข้อต่อสะโพก (Hip CARs), ข้อเท้า, ข้อข้อมือ และข้อไหล่',
+                    'Muscle Activation: ใช้ Resistance Band เล่นท่า External Rotation, Band Pull-Aparts (2 เซต x 15 ครั้ง)',
+                    'On-Wall Quiet Feet: ปีนเส้นทางง่ายกว่าเกรดสูงสุด 3-4 เกรด มุ่งเน้นการวางเท้าเงียบกริบและการบิดสะโพกเข้าหาผนัง'
+                ],
+                caution: 'ห้ามยืดเหยียดแบบ Passive Hold นานเกิน 10 วินาทีในช่วงวอร์มอัพ เพราะจะลดกำลังหดตัวสูงสุดของกล้ามเนื้อ'
+            },
+            {
+                id: 'modB',
+                code: 'Module B',
+                title: 'Finger Strength & Tissue Adaptation',
+                category: 'strength',
+                duration: '20–30 นาที',
+                equip: 'Hangboard (ขอบมาตรฐาน 20mm), เครื่องชั่งน้ำหนัก / ยางยืดช่วยพยุง',
+                physio: 'กระตุ้นการสังเคราะห์คอลลาเจน (Collagen Remodeling) ในเอ็นยึดข้อ A2/A4 และปรับตัวแบบ Submaximal โดยไม่สะสมความล้าประสาท',
+                steps: [
+                    'ตั้งค่าขอบจับมาตรฐานขนาด 20mm เท่านั้น',
+                    'โหนตัวแบบ Submaximal Density Hangs (RPE 7-8/10) โดยใช้เท้าวางช่วยยันพื้นหรือใช้ยางยืดพยุง',
+                    'จับค้าง 10 วินาทีต่อรอบ / พักสมบูรณ์ 2-3 นาทีระหว่างรอบ',
+                    'ปฏิบัติ 3-4 รอบต่อรูปแบบการจับ (สลับระหว่าง Half Crimp 90° และ Open Drag 3 นิ้ว) รวม 6-8 รอบ'
+                ],
+                caution: 'ห้ามใช้ท่า Full Crimp (ใช้นิ้วโป้งล็อค) และงดเว้น Campus Board อย่างเด็ดขาด เนื่องจากประสบการณ์น้อยกว่า 2 ปี'
+            },
+            {
+                id: 'modC',
+                code: 'Module C',
+                title: 'Bouldering & Power-Technical Skill',
+                category: 'climb',
+                duration: '60–90 นาที',
+                equip: 'ผนัง Bouldering',
+                physio: 'เน้นระบบพลังงาน ATP-CP และการเกณฑ์กำลังประสาทสูงสุด (Neuromuscular Recruitment) พร้อมฝึกทักษะการบิดสะโพก',
+                steps: [
+                    'รูปแบบ 1 (Limit Bouldering): เลือกโจทย์ยากระดับขีดจำกัด ทำเพียง 3-4 ปัญหา/เซสชัน พัก 3-5 นาทีระหว่างรอบลองปีน',
+                    'รูปแบบ 2 (Technique & Volume): เลือกโจทย์ต่ำกว่าเกรดสูงสุด 1-2 เกรด จำนวน 6-8 ปัญหา',
+                    'ฝึกแบบฝึกหัด Hover Hands (ค้างมือนอกโฮลด์ 2 วินาทีก่อนจับ) เพื่อเกร็งแกนกลางลำตัว',
+                    'ฝึกแบบฝึกหัด Hips-to-Wall บังคับบิดสะโพกแนบผนังก่อนก้าวเท้าทุกครั้ง'
+                ],
+                caution: 'หากพบว่าแรงจับตกหรือการเคลื่อนไหวสูญเสียความแม่นยำ ให้หยุดการฝึกทันทีเพื่อป้องกันสมองจดจำแบบแผนเคลื่อนไหวที่ผิด'
+            },
+            {
+                id: 'modD',
+                code: 'Module D',
+                title: 'Lead & Power Endurance',
+                category: 'climb',
+                duration: '45–75 นาที',
+                equip: 'ผนัง Lead Climbing หรือ ผนัง Bouldering',
+                physio: 'พัฒนาความทนทานต่อกรดแลกติกของกล้ามเนื้องอนิ้วมือ (Forearm Flexors) และฝึกทักษะการพักสลัดมือ (Micro-Shakes)',
+                steps: [
+                    'โปรโตคอล 4x4s (บน Bouldering Wall): เลือก 4 ปัญหาความยาก 70-80% ปีนต่อเนื่อง 1 ถึง 4 พัก 5 นาที ปฏิบัติ 4 เซต',
+                    'โปรโตคอล Double Route Laps (บน Lead Wall): ปีนเส้นทาง Onsight Max ถึงยอด โรยตัวลงมาและปีนซ้ำทันที 1 รอบ พัก 10 นาที (ทำ 4-5 เซต)',
+                    'ฝึกการสลัดมือแบบ Micro-Shakes 3-5 วินาทีขณะอยู่ใน Rest Position บนผนังเพื่อดึงออกซิเจนกลับเข้ากล้ามเนื้อ'
+                ],
+                caution: 'ควบคุมจังหวะการหายใจและรักษา Pacing ให้สม่ำเสมอ ห้ามเกร็งจับโฮลด์แน่นเกินความจำเป็น (Over-gripping)'
+            },
+            {
+                id: 'modE',
+                code: 'Module E',
+                title: 'Hip Mobility & Active Flexibility',
+                category: 'mobility',
+                duration: '20–30 นาที',
+                equip: 'เสื่อโยคะ, บล็อกโยคะ',
+                physio: 'เพิ่มช่วงการเคลื่อนไหว (ROM) ข้อต่อสะโพก เพื่อดึงจุดศูนย์ถ่วงเข้าหาผนัง ลดภาระแรงดึงตกกระทบที่นิ้วมือโดยตรง',
+                steps: [
+                    '90/90 Hip Stretch & Rotations: 3 เซต x 60 วินาที/ข้าง เพิ่มช่วงการหมุนเข้า/ออกของหัวกระดูกต้นขา',
+                    'Cossack Squat: 3 เซต x 8-10 ครั้ง/ข้าง เสริมความแข็งแรงกล้ามเนื้อต้นขาด้านในในมุมกว้าง',
+                    'Frog Stretch PNF: เกร็งต้าน 7 วินาที + ผ่อนยืดลึกลง 30 วินาที (3 เซต)',
+                    'Pancake Straddle Fold: 3 เซต x 45-60 วินาที ยืด Hamstrings เพื่อการยกเท้าสูง (High Steps)'
+                ],
+                caution: 'การยืด PNF ต้องทำหลังจากกล้ามเนื้ออุ่นแล้วเท่านั้น ห้ามทำกระตุกรุนแรง'
+            },
+            {
+                id: 'modF',
+                code: 'Module F',
+                title: 'Antagonist & Core Conditioning',
+                category: 'mobility',
+                duration: '20–30 นาที',
+                equip: 'ดัมเบล (2-5 kg), บาร์โหน, ยางยืด',
+                physio: 'ปรับสมดุลแรงบิดรอบข้อไหล่และข้อศอก ป้องกันอาการไหล่ห่อและข้อศอกอักเสบ (Golfer’s Elbow)',
+                steps: [
+                    'Overhead Dumbbell Press / Push-ups: 3 เซต x 6-8 ครั้ง สร้างกำลังกล้ามเนื้อดัน (Pushing Complex)',
+                    'Wrist Extensor Curls: 3 เซต x 15-20 ครั้ง (ดัมเบล 2-5 kg) เสริมความแข็งแรงกล้ามเนื้อเหยียดข้อมือ',
+                    'Scapular Push-ups & Reverse Flyes: 3 เซต x 12 ครั้ง เสริมความมั่นคงให้สะบัก'
+                ],
+                caution: 'ใช้น้ำหนักปานกลาง เน้นการควบคุมจังหวะลง (Eccentric Phase) อย่างช้าๆ 2-3 วินาที'
+            }
+        ];
+
+        const daysScheduleData = {
+            mon: {
+                title: 'วันจันทร์: Bouldering & Finger Strength Day',
+                modules: ['Module A', 'Module B', 'Module C (Limit)', 'Module F'],
+                focus: 'เน้นกำลังสูงสุด นิ้วมือ และเทคนิคโบลเดอริ่ง',
+                desc: 'วอร์มอัพ ➔ ฝึกนิ้ว 20mm แบบ Submaximal ➔ Limit Bouldering ➔ ปิดท้ายด้วย Antagonist Conditioning',
+                ruleNote: 'ฝึกนิ้วใน Module B ก่อนการปีนจริงเสมอขณะระบบประสาทสดใหม่'
+            },
+            tue: {
+                title: 'วันอังคาร: Dedicated Mobility Session',
+                modules: ['Module E'],
+                focus: 'ยืดเหยียดสะโพกเชิงลึกและปรับโครงสร้างข้อต่อ',
+                desc: 'ทำที่บ้านใช้เวลา 30 นาที เน้น 90/90 Rotations, Cossack Squats และ Frog Stretch PNF',
+                ruleNote: 'วันพักการปีนเพื่อให้เอ็นนิ้วมือซ่อมแซม แต่เป็นวันฝึกความยืดหยุ่นสะโพกเชิงรุก'
+            },
+            wed: {
+                title: 'วันพุธ: Lead & Power Endurance Day',
+                modules: ['Module A', 'Module D', 'Module F'],
+                focus: 'พัฒนาความทนทานต่อกรดแลกติกและทักษะ Lead',
+                desc: 'วอร์มอัพ ➔ Double Route Laps หรือ 4x4s Protocol ➔ Antagonist Conditioning',
+                ruleNote: 'เน้นการฝึก Micro-Shakes และการจัดการ Pacing ห้ามเล่น Limit Bouldering ในวันนี้'
+            },
+            thu: {
+                title: 'วันพฤหัสบดี: Full Rest Day',
+                modules: ['พักผ่อนสมบูรณ์ (Full Rest)'],
+                focus: 'ฟื้นฟูระบบประสาทส่วนกลางและการสังเคราะห์คอลลาเจน',
+                desc: 'นอนหลับพักผ่อนให้เพียงพอ ทานโปรตีน 1.6-2.0g/kg',
+                ruleNote: 'การพักผ่อนคือส่วนหนึ่งของตารางซ้อมที่สำคัญที่สุดสำหรับเอ็นข้อต่อ'
+            },
+            fri: {
+                title: 'วันศุกร์: Technique & Volume Bouldering',
+                modules: ['Module A', 'Module B', 'Module C (Tech)', 'Module E'],
+                focus: 'เน้นความเชี่ยวชาญการเคลื่อนไหวและ Hip Mobility',
+                desc: 'วอร์มอัพ ➔ ฝึกนิ้ว 20mm ➔ Technique Bouldering (Hover Hands, Hips-to-Wall) ➔ Hip Mobility',
+                ruleNote: 'ใช้โจทย์ระดับกลาง Focus ที่จัดระเบียบร่างกายสะโพกชิดผนัง'
+            },
+            sat: {
+                title: 'วันเสาร์: Rest or Easy Outdoor Climbing',
+                modules: ['Full Rest / Active Recovery'],
+                focus: 'พักผ่อน หรือ ปีนผาธรรมชาติระดับผ่อนคลาย',
+                desc: 'เน้นความสนุกสนาน ไม่สะสมความล้าเพิ่ม',
+                ruleNote: 'ประเมินความล้าสะสมของนิ้วมือเป็นหลัก'
+            },
+            sun: {
+                title: 'วันอาทิตย์: Dedicated Mobility Session',
+                modules: ['Module E'],
+                focus: 'ยืดเหยียดสะโพกเชิงลึก PNF',
+                desc: 'ฟื้นฟูสะโพก เตรียมพร้อมสำหรับสัปดาห์ถัดไป',
+                ruleNote: 'ช่วยผ่อนคลายความตึงสะสมของท่อนล่าง'
+            }
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            initRadarChart();
+            renderModules('all');
+            renderDayDetail('mon');
+            initMacrocycleChart();
+            setupEventListeners();
+            calculateTargetHang();
+        });
+
+        // SECTION 1: RADAR CHART
+        function initRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'ความแข็งแรงนิ้ว (Finger)',
+                        'ความยืดหยุ่นสะโพก (Hip ROM)',
+                        'กำลังสูงสุด (Power)',
+                        'ความทนทาน (Endurance)',
+                        'สมดุลกล้ามเนื้อดัน (Pushing)',
+                        'ความมั่นคงเอ็นข้อต่อ (Pulley)'
+                    ],
+                    datasets: [{
+                        label: 'ประเมินปัจจุบัน',
+                        data: [50, 40, 65, 60, 45, 50],
+                        backgroundColor: 'rgba(217, 107, 67, 0.2)',
+                        borderColor: '#d96b43',
+                        pointBackgroundColor: '#d96b43',
+                        borderWidth: 2
+                    }, {
+                        label: 'เป้าหมายหลัง 12 สัปดาห์',
+                        data: [75, 75, 80, 80, 75, 80],
+                        backgroundColor: 'rgba(101, 116, 59, 0.15)',
+                        borderColor: '#65743b',
+                        pointBackgroundColor: '#65743b',
+                        borderWidth: 2,
+                        borderDash: [4, 4]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#efe6d5' },
+                            grid: { color: '#efe6d5' },
+                            pointLabels: {
+                                font: { family: 'Sarabun', size: 11 },
+                                color: '#334155'
+                            },
+                            ticks: { display: false, max: 100 }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { font: { family: 'Sarabun', size: 12 }, boxWidth: 12 }
+                        }
+                    }
+                }
+            });
+        }
+
+        // SECTION 2: RENDER MODULE CARDS
+        function renderModules(filter) {
+            const grid = document.getElementById('modulesGrid');
+            grid.innerHTML = '';
+
+            const filtered = filter === 'all' 
+                ? modulesData 
+                : modulesData.filter(m => m.category === filter);
+
+            filtered.forEach(mod => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl p-5 border border-sand-200 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between space-y-4';
+                card.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-1 bg-sand-100 text-terracotta-600 font-bold text-xs rounded-lg">${mod.code}</span>
+                            <span class="text-xs text-slate-500 font-medium">⏱️ ${mod.duration}</span>
+                        </div>
+                        <h3 class="font-heading font-bold text-lg text-slatecustom-800 leading-snug">${mod.title}</h3>
+                        <p class="text-xs text-slate-600 line-clamp-2">${mod.physio}</p>
+                    </div>
+                    <div class="pt-3 border-t border-sand-100 flex items-center justify-between">
+                        <span class="text-[11px] text-slate-500 truncate max-w-[180px]">🛠️ ${mod.equip}</span>
+                        <button onclick="openModuleModal('${mod.id}')" class="px-3 py-1.5 bg-terracotta-500/10 hover:bg-terracotta-500 text-terracotta-600 hover:text-white rounded-lg text-xs font-semibold transition-colors">
+                            รายละเอียด ➔
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // MODAL FUNCTIONS
+        window.openModuleModal = function(modId) {
+            const mod = modulesData.find(m => m.id === modId);
+            if(!mod) return;
+
+            document.getElementById('modalCode').innerText = mod.code;
+            document.getElementById('modalTitle').innerText = mod.title;
+            document.getElementById('modalDuration').innerText = `ระยะเวลา: ${mod.duration}`;
+            document.getElementById('modalPhysio').innerText = mod.physio;
+            document.getElementById('modalEquip').innerText = mod.equip;
+            document.getElementById('modalCaution').innerText = mod.caution;
+
+            const stepsList = document.getElementById('modalSteps');
+            stepsList.innerHTML = '';
+            mod.steps.forEach(step => {
+                const li = document.createElement('li');
+                li.innerText = step;
+                stepsList.appendChild(li);
+            });
+
+            document.getElementById('moduleModal').classList.remove('hidden');
+        };
+
+        function closeModal() {
+            document.getElementById('moduleModal').classList.add('hidden');
+        }
+
+        // SECTION 3: WEEKLY SCHEDULE RENDER
+        function renderDayDetail(dayKey) {
+            const data = daysScheduleData[dayKey];
+            if(!data) return;
+
+            const panel = document.getElementById('dayDetailPanel');
+            panel.innerHTML = `
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-sand-200 pb-3">
+                    <h3 class="font-heading font-bold text-xl text-slatecustom-800">${data.title}</h3>
+                    <span class="text-xs px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full font-semibold">${data.focus}</span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                    <div class="md:col-span-5 space-y-2">
+                        <h4 class="font-heading font-semibold text-xs text-slate-500 uppercase">มอดูลที่ต้องปฏิบัติ:</h4>
+                        <div class="flex flex-wrap gap-2">
+                            ${data.modules.map(m => `<span class="px-3 py-1.5 bg-white border border-sand-300 rounded-lg text-xs font-bold text-slatecustom-800 shadow-sm">${m}</span>`).join('')}
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-7 space-y-2">
+                        <h4 class="font-heading font-semibold text-xs text-slate-500 uppercase">ลำดับกิจกรรมหลัก:</h4>
+                        <p class="text-xs text-slate-700 bg-white p-3 rounded-lg border border-sand-200 leading-relaxed">${data.desc}</p>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-center space-x-2">
+                    <span>📌</span>
+                    <span><strong>คำแนะนำประจำวัน:</strong> ${data.ruleNote}</span>
+                </div>
+            `;
+        }
+
+        // SECTION 4: MACROCYCLE CHART
+        let macroChart;
+        function initMacrocycleChart() {
+            const ctx = document.getElementById('macrocycleChart').getContext('2d');
+            const weeks = Array.from({length: 12}, (_, i) => `W${i+1}`);
+            
+            // Volume curve (High W1-5, Drop W6, High W7-11, Drop W12)
+            const volumeData = [70, 75, 80, 85, 90, 45, 75, 80, 85, 90, 95, 50];
+            const intensityData = [60, 65, 70, 75, 80, 50, 80, 85, 90, 90, 95, 50];
+
+            macroChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: weeks,
+                    datasets: [
+                        {
+                            label: 'ภาระการฝึก (Volume %)',
+                            data: volumeData,
+                            borderColor: '#d96b43',
+                            backgroundColor: 'rgba(217, 107, 67, 0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'ความเข้มข้น (Intensity %)',
+                            data: intensityData,
+                            borderColor: '#65743b',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            min: 30,
+                            max: 100,
+                            ticks: { callback: v => v + '%' }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                afterBody: (ctx) => {
+                                    const index = ctx[0].dataIndex;
+                                    if(index === 5 || index === 11) {
+                                        return '\n⚠️ DELOAD WEEK: ลดปริมาณงาน 50% เพื่อให้คอลลาเจนเอ็นข้อต่อฟื้นตัว';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // SECTION 5: CALCULATOR & TIMERS
+        function calculateTargetHang() {
+            const bw = parseFloat(document.getElementById('userBW').value) || 75;
+            const rpe = parseFloat(document.getElementById('rpeSelect').value) || 0.8;
+            
+            const targetLoad = bw * rpe;
+            const unweightNeeded = bw - targetLoad;
+
+            document.getElementById('targetHangWeight').innerText = 
+                `${targetLoad.toFixed(1)} kg (ช่วยยันเท้า/พยุง ~${unweightNeeded.toFixed(1)} kg)`;
+        }
+
+        // Hangboard Timer Logic
+        let hangInterval;
+        let hangTime = 10.0;
+        let isHangRunning = false;
+
+        function startHangTimer() {
+            if(isHangRunning) return;
+            isHangRunning = true;
+            hangTime = 10.0;
+            document.getElementById('hangStatus').innerText = '🔥 กำลังโหน... เกร็งแกนกลางลำตัว!';
+            document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-terracotta-500 animate-pulse';
+
+            hangInterval = setInterval(() => {
+                hangTime -= 0.1;
+                if(hangTime <= 0) {
+                    clearInterval(hangInterval);
+                    hangTime = 0.0;
+                    isHangRunning = false;
+                    document.getElementById('hangStatus').innerText = '✅ ครบ 10 วินาที! พักสมบูรณ์ 2-3 นาที';
+                    document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-emerald-400';
+                }
+                document.getElementById('hangTimerDisplay').innerText = hangTime.toFixed(1) + 's';
+            }, 100);
+        }
+
+        function resetHangTimer() {
+            clearInterval(hangInterval);
+            isHangRunning = false;
+            hangTime = 10.0;
+            document.getElementById('hangTimerDisplay').innerText = '10.0s';
+            document.getElementById('hangStatus').innerText = 'พร้อมเริ่มต้น (Density Hang 10s)';
+            document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-amber-400';
+        }
+
+        // PNF Timer Logic
+        let pnfInterval;
+        let isPnfRunning = false;
+
+        function startPnfTimer() {
+            if(isPnfRunning) return;
+            isPnfRunning = true;
+            
+            let phase = 'contract'; // contract (7s) -> relax (30s)
+            let time = 7;
+
+            document.getElementById('pnfStatus').innerText = '⚠️ CONTRACT PHASE: เกร็งหนีบเข่ากดลงพื้น 70%';
+            document.getElementById('pnfStatus').className = 'text-sm font-bold tracking-wide uppercase text-amber-400 animate-pulse';
+
+            pnfInterval = setInterval(() => {
+                time--;
+                if(phase === 'contract' && time <= 0) {
+                    phase = 'relax';
+                    time = 30;
+                    document.getElementById('pnfStatus').innerText = '🧘 RELAX PHASE: ผ่อนคลาย ทิ้งสะโพกลึกลงมุมใหม่';
+                    document.getElementById('pnfStatus').className = 'text-sm font-bold tracking-wide uppercase text-emerald-400';
+                } else if(phase === 'relax' && time <= 0) {
+                    clearInterval(pnfInterval);
+                    isPnfRunning = false;
+                    document.getElementById('pnfStatus').innerText = '🎉 จบ 1 รอบ PNF! พัก 45 วินาทีก่อนทำรอบถัดไป';
+                    document.getElementById('pnfStatus').className = 'text-sm font-bold tracking-wide uppercase text-blue-400';
+                }
+                
+                document.getElementById('pnfTimerDisplay').innerText = (time < 10 ? '0' : '') + time + 's';
+            }, 1000);
+        }
+
+        function resetPnfTimer() {
+            clearInterval(pnfInterval);
+            isPnfRunning = false;
+            document.getElementById('pnfTimerDisplay').innerText = '07s';
+            document.getElementById('pnfStatus').innerText = 'พร้อมสำหรับ Frog Stretch PNF';
+            document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-emerald-400';
+        }
+
+        // EVENT LISTENERS
+        function setupEventListeners() {
+            // Mobile menu toggle
+            document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+                document.getElementById('mobileMenu').classList.toggle('hidden');
+            });
+
+            // Filter buttons
+            document.querySelectorAll('.mod-filter').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.mod-filter').forEach(b => {
+                        b.classList.remove('active', 'bg-white', 'shadow-sm', 'text-slate-800');
+                        b.classList.add('text-slate-600');
+                    });
+                    e.target.classList.add('active', 'bg-white', 'shadow-sm', 'text-slate-800');
+                    e.target.classList.remove('text-slate-600');
+                    renderModules(e.target.dataset.filter);
+                });
+            });
+
+            // Day Schedule Tabs
+            document.querySelectorAll('.day-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    document.querySelectorAll('.day-tab').forEach(t => {
+                        t.classList.remove('active', 'border-terracotta-500', 'text-terracotta-600');
+                        t.classList.add('border-transparent', 'text-slate-500');
+                    });
+                    e.target.classList.add('active', 'border-terracotta-500', 'text-terracotta-600');
+                    e.target.classList.remove('border-transparent', 'text-slate-500');
+                    renderDayDetail(e.target.dataset.day);
+                });
+            });
+
+            // Modal Closes
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('closeModalBottomBtn').addEventListener('click', closeModal);
+            document.getElementById('moduleModal').addEventListener('click', (e) => {
+                if(e.target.id === 'moduleModal') closeModal();
+            });
+
+            // Calculator Listeners
+            document.getElementById('userBW').addEventListener('input', calculateTargetHang);
+            document.getElementById('rpeSelect').addEventListener('change', calculateTargetHang);
+
+            // Timer Buttons
+            document.getElementById('startHangBtn').addEventListener('click', startHangTimer);
+            document.getElementById('resetHangBtn').addEventListener('click', resetHangTimer);
+            document.getElementById('startPnfBtn').addEventListener('click', startPnfTimer);
+            document.getElementById('resetPnfBtn').addEventListener('click', resetPnfTimer);
+
+            // Macrocycle chart toggle buttons
+            document.getElementById('toggleVolumeBtn').addEventListener('click', (e) => {
+                e.target.className = 'px-3 py-1.5 bg-terracotta-500 text-white rounded-lg shadow-sm';
+                document.getElementById('toggleIntensityBtn').className = 'px-3 py-1.5 bg-sand-200 text-slate-700 rounded-lg hover:bg-sand-300';
+                macroChart.data.datasets[0].hidden = false;
+                macroChart.update();
+            });
+
+            document.getElementById('toggleIntensityBtn').addEventListener('click', (e) => {
+                e.target.className = 'px-3 py-1.5 bg-olive-600 text-white rounded-lg shadow-sm';
+                document.getElementById('toggleVolumeBtn').className = 'px-3 py-1.5 bg-sand-200 text-slate-700 rounded-lg hover:bg-sand-300';
+                macroChart.data.datasets[0].hidden = true;
+                macroChart.update();
+            });
+        }
+    </script>
+</body>
+</html>
