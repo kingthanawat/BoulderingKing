@@ -631,6 +631,26 @@
                     </div>
                 </div>
 
+                <!-- PNF Timer Options (NEW) -->
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">เวลาพักระหว่างเซต:</label>
+                        <select id="pnfRestSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
+                            <option value="45">พัก 45 วินาที (45s)</option>
+                            <option value="60" selected>พัก 1 นาที (60s)</option>
+                            <option value="90">พัก 1.5 นาที (90s)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">จำนวนเซตทั้งหมด:</label>
+                        <select id="pnfSetsSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
+                            <option value="2">2 เซต</option>
+                            <option value="3" selected>3 เซต</option>
+                            <option value="4">4 เซต</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- PNF Timer Display Panel -->
                 <div class="text-center p-6 bg-slatecustom-800 rounded-xl text-white space-y-4 shadow-inner">
                     <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slatecustom-700 pb-2">
@@ -1614,11 +1634,13 @@
             clearInterval(hangTimer);
             isHangRunning = false;
             btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต่อ`;
-            btn.classList.replace('bg-amber-600', 'bg-terracotta-500');
+            btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
+            btn.classList.add('bg-terracotta-500', 'hover:bg-terracotta-600');
         } else {
             isHangRunning = true;
             btn.innerHTML = `<i class="fa-solid fa-pause"></i> หยุดชั่วคราว`;
-            btn.classList.replace('bg-terracotta-500', 'bg-amber-600');
+            btn.classList.remove('bg-terracotta-500', 'hover:bg-terracotta-600');
+            btn.classList.add('bg-amber-600', 'hover:bg-amber-700');
 
             hangSetTotal = parseInt(document.getElementById('hangSetsSelect').value) || 6;
 
@@ -1683,16 +1705,22 @@
         document.getElementById('hangStatus').className = "text-sm font-medium tracking-wide uppercase text-amber-400";
         document.getElementById('hangPhaseBadge').innerText = "เฟสโหนนิ้ว (WORK)";
         document.getElementById('hangPhaseBadge').className = "px-2.5 py-0.5 rounded bg-terracotta-500 text-white font-semibold";
-        document.getElementById('startHangBtn').innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น`;
-        document.getElementById('startHangBtn').className = "px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 rounded-lg text-white shadow-md transition-transform active:scale-95 flex items-center gap-1.5";
+        
+        const btn = document.getElementById('startHangBtn');
+        btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น`;
+        btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
+        btn.classList.add('bg-terracotta-500', 'hover:bg-terracotta-600');
+        
         updateHangDisplay();
     }
 
-    // PNF Stretch Timer Logic
+    // PNF Stretch Timer Logic (UPDATED)
     let pnfTimer = null;
     let pnfTimeLeft = 7;
-    let pnfPhaseState = 'contract'; // 'contract' -> 'stretch'
+    let pnfPhaseState = 'contract'; // 'contract' -> 'stretch' -> 'rest'
     let isPnfRunning = false;
+    let pnfSetCurrent = 1;
+    let pnfSetTotal = 3;
 
     function togglePNFTimer() {
         initAudioContext();
@@ -1704,15 +1732,18 @@
             clearInterval(pnfTimer);
             isPnfRunning = false;
             btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต่อ`;
+            btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
+            btn.classList.add('bg-olive-600', 'hover:bg-olive-700');
         } else {
             isPnfRunning = true;
             btn.innerHTML = `<i class="fa-solid fa-pause"></i> หยุดชั่วคราว`;
+            btn.classList.remove('bg-olive-600', 'hover:bg-olive-700');
+            btn.classList.add('bg-amber-600', 'hover:bg-amber-700');
 
-            if (pnfPhaseState === 'contract') {
-                statusLabel.innerText = "กดเข่าลงพื้นออกแรงเกร็งต้าน 7 วินาที!";
-                statusLabel.className = "text-sm font-medium tracking-wide uppercase text-amber-400";
-                phaseBadge.innerText = "เกร็งต้าน (CONTRACT)";
-                phaseBadge.className = "px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold";
+            pnfSetTotal = parseInt(document.getElementById('pnfSetsSelect').value) || 3;
+
+            if (pnfPhaseState === 'contract' && pnfTimeLeft === 7 && pnfSetCurrent === 1) {
+                 document.getElementById('pnfSetDisplay').innerText = `รอบที่ ${pnfSetCurrent} / ${pnfSetTotal}`;
             }
 
             pnfTimer = setInterval(() => {
@@ -1725,6 +1756,7 @@
 
                 if (pnfTimeLeft <= 0) {
                     if (pnfPhaseState === 'contract') {
+                        // Switch from Contract to Stretch
                         playBeepSound('high');
                         pnfPhaseState = 'stretch';
                         pnfTimeLeft = 30;
@@ -1732,10 +1764,35 @@
                         statusLabel.className = "text-sm font-medium tracking-wide uppercase text-emerald-400";
                         phaseBadge.innerText = "ยืดผ่อนลึก (STRETCH)";
                         phaseBadge.className = "px-2.5 py-0.5 rounded bg-emerald-600 text-white font-semibold";
-                    } else {
-                        playBeepSound('complete');
-                        resetPNFTimer();
-                        statusLabel.innerText = "จบครบรอบ PNF แล้ว! พัก 1 นาที ก่อนรอบถัดไป";
+                    } else if (pnfPhaseState === 'stretch') {
+                        // Check if it's the final set
+                        if (pnfSetCurrent >= pnfSetTotal) {
+                            playBeepSound('complete');
+                            resetPNFTimer();
+                            statusLabel.innerText = "จบครบรอบ PNF แล้ว!";
+                            return;
+                        } else {
+                            // Switch to Rest phase between sets
+                            playBeepSound('high');
+                            pnfPhaseState = 'rest';
+                            pnfTimeLeft = parseInt(document.getElementById('pnfRestSelect').value) || 60;
+                            statusLabel.innerText = "พักก่อนเริ่มรอบถัดไป";
+                            statusLabel.className = "text-sm font-medium tracking-wide uppercase text-blue-400";
+                            phaseBadge.innerText = "พักสมบูรณ์ (REST)";
+                            phaseBadge.className = "px-2.5 py-0.5 rounded bg-blue-600 text-white font-semibold";
+                        }
+                    } else if (pnfPhaseState === 'rest') {
+                        // Switch from Rest back to Contract for the next set
+                        playBeepSound('high');
+                        pnfSetCurrent++;
+                        pnfPhaseState = 'contract';
+                        pnfTimeLeft = 7;
+                        
+                        document.getElementById('pnfSetDisplay').innerText = `รอบที่ ${pnfSetCurrent} / ${pnfSetTotal}`;
+                        statusLabel.innerText = "กดเข่าลงพื้นออกแรงเกร็งต้าน 7 วินาที!";
+                        statusLabel.className = "text-sm font-medium tracking-wide uppercase text-amber-400";
+                        phaseBadge.innerText = "เกร็งต้าน (CONTRACT)";
+                        phaseBadge.className = "px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold";
                     }
                 }
             }, 1000);
@@ -1753,13 +1810,21 @@
         isPnfRunning = false;
         pnfPhaseState = 'contract';
         pnfTimeLeft = 7;
+        pnfSetCurrent = 1;
+        pnfSetTotal = parseInt(document.getElementById('pnfSetsSelect').value) || 3;
+        
+        document.getElementById('pnfSetDisplay').innerText = `รอบที่ ${pnfSetCurrent} / ${pnfSetTotal}`;
         document.getElementById('pnfStatus').innerText = "เตรียมพร้อมจัดท่า Frog Stretch";
         document.getElementById('pnfStatus').className = "text-sm font-medium tracking-wide uppercase text-emerald-400";
         document.getElementById('pnfPhaseBadge').innerText = "เฟสเกร็งต้าน (CONTRACT)";
         document.getElementById('pnfPhaseBadge').className = "px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold";
-        document.getElementById('startPNFBtn') ? document.getElementById('startPNFBtn').innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น PNF` : null;
-        const pnfBtn = document.getElementById('startPnfBtn');
-        if (pnfBtn) pnfBtn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น PNF`;
+        
+        const btn = document.getElementById('startPnfBtn');
+        if (btn) {
+            btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น PNF`;
+            btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
+            btn.classList.add('bg-olive-600', 'hover:bg-olive-700');
+        }
         updatePNFDisplay();
     }
 
