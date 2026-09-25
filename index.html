@@ -1,17 +1,19 @@
 <!DOCTYPE html>
-<html lang="th" class="scroll-smooth">
+<html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClimbFit Dynamic: ระบบวางแผนการฝึกซ้อมปีนผาเฉพาะบุคคล</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts: Sarabun & Kanit -->
+    <title>ClimbKing Dynamic Pro - ระบบวางแผนและประเมินสรีรวิทยาการปีนผา</title>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -19,16 +21,15 @@
                     colors: {
                         sand: {
                             50: '#fdfbf7',
-                            100: '#f7f3eb',
-                            200: '#efe6d5',
-                            300: '#e2d3b7',
-                            800: '#544736',
-                            900: '#382f23',
+                            100: '#f7f4ed',
+                            200: '#eee7d9',
+                            300: '#e1d5be',
                         },
                         terracotta: {
+                            50: '#fdf6f3',
                             500: '#d96b43',
-                            600: '#c2542d',
-                            700: '#9e3f1f',
+                            600: '#c2552d',
+                            700: '#a3411f',
                         },
                         slatecustom: {
                             700: '#334155',
@@ -36,13 +37,14 @@
                             900: '#0f172a',
                         },
                         olive: {
+                            500: '#84944d',
                             600: '#65743b',
-                            700: '#4d592b',
+                            700: '#4d5a2b',
                         }
                     },
                     fontFamily: {
-                        sans: ['Sarabun', 'sans-serif'],
                         heading: ['Kanit', 'sans-serif'],
+                        body: ['Sarabun', 'sans-serif'],
                     }
                 }
             }
@@ -50,1519 +52,1607 @@
     </script>
     <style>
         body {
+            font-family: 'Sarabun', sans-serif;
             background-color: #fdfbf7;
             color: #1e293b;
+        }
+        .font-heading {
+            font-family: 'Kanit', sans-serif;
+        }
+        .completed-item {
+            text-decoration: line-through;
+            opacity: 0.6;
         }
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 650px;
-            margin-left: auto;
-            margin-right: auto;
             height: 320px;
-            max-height: 400px;
-        }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 360px;
-            }
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #efe6d5;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #d96b43;
-            border-radius: 4px;
         }
         .nav-link.active {
             color: #d96b43;
             border-bottom: 2px solid #d96b43;
             font-weight: 700;
         }
+        /* Custom Scrollbar for Modal */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f7f4ed;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e1d5be;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d96b43;
+        }
     </style>
 </head>
-<body class="font-sans antialiased text-slate-800 leading-relaxed min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col antialiased">
 
-    <!-- Chosen Palette: Warm Neutral Harmony (Sand #fdfbf7 background, Deep Slate #1e293b headers, Terracotta #d96b43 active elements, Olive #65743b highlights) -->
-    <!-- Application Structure Plan:
-         This application implements a true Multi-Page View Navigation SPA:
-         1. Dynamic Multi-View Router (JS function switchView): Seamlessly hides non-active screens and renders active screen with top scroll position and canvas chart resize handlers.
-         2. View Screens:
-            - View 1: Diagnostic Assessment Form (Input specs & multi-select weaknesses).
-            - View 2: Personalized Athlete Diagnostic (Radar chart, Biomechanics cards).
-            - View 3: Tailored Modular Hub (Interactive card library with priority tags & modal details).
-            - View 4: Weekly Matrix Schedule (3, 4, 5 days per week selector + sequencing rules).
-            - View 5: 12-Week Macrocycle Plan (Dynamic Volume/Intensity split line chart).
-            - View 6: Interactive Tools & Work/Rest Timers (Hangboard 10s/rest timer + PNF stretch 7s/30s/rest timer).
-         3. Navigation: Top sticky bar + step-by-step footer navigation buttons ("ถัดไป", "ย้อนกลับ"). -->
-    <!-- Visualization & Content Choices:
-         - Radar Chart (Chart.js): Visualizes baseline vs target physiological capacity.
-         - 12-Week Load Chart (Chart.js): Dynamic volume/intensity split.
-         - Work/Rest Timers: Real-time JS timers for interval-based climbing training.
-         - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
-    <!-- Navigation Header -->
-    <header class="sticky top-0 z-40 bg-sand-50/95 backdrop-blur-md border-b border-sand-200 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('assessmentView')">
-                <span class="text-2xl">🧗</span>
-                <div>
-                    <h1 class="font-heading font-bold text-lg md:text-xl text-slatecustom-800 leading-tight">ClimbFit Custom</h1>
-                    <p class="text-xs text-slate-500">ระบบวางแผนซ้อมปีนผาเฉพาะบุคคล (Multi-Page App)</p>
-                </div>
+<!-- Navigation Header -->
+<header class="sticky top-0 z-40 bg-sand-50/95 backdrop-blur-md border-b border-sand-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('assessmentView')">
+            <div class="w-10 h-10 rounded-xl bg-terracotta-500 flex items-center justify-center text-white text-xl shadow-md">
+                <i class="fa-solid fa-mountain"></i>
             </div>
-            
-            <nav class="hidden lg:flex space-x-4 text-xs font-medium">
-                <button onclick="switchView('assessmentView')" id="nav-assessmentView" class="nav-link px-2 py-1 hover:text-terracotta-500 transition-colors active">1. ประเมินร่างกาย</button>
-                <button onclick="switchView('profileView')" id="nav-profileView" class="nav-link px-2 py-1 hover:text-terracotta-500 transition-colors">2. ผลวิเคราะห์</button>
-                <button onclick="switchView('modulesView')" id="nav-modulesView" class="nav-link px-2 py-1 hover:text-terracotta-500 transition-colors">3. คลังมอดูล</button>
-                <button onclick="switchView('scheduleView')" id="nav-scheduleView" class="nav-link px-2 py-1 hover:text-terracotta-500 transition-colors">4. ตารางประจำสัปดาห์</button>
-                <button onclick="switchView('periodizationView')" id="nav-periodizationView" class="nav-link px-2 py-1 hover:text-terracotta-500 transition-colors">5. แผน 12 สัปดาห์</button>
-                <button onclick="switchView('toolsView')" id="nav-toolsView" class="nav-link px-2 py-1 hover:text-terracotta-500 transition-colors">6. ไทม์เมอร์ & คำนวณ</button>
-            </nav>
-
-            <button id="mobileMenuBtn" class="lg:hidden p-2 rounded-lg bg-sand-200 text-slate-700 hover:bg-sand-300">
-                ☰
-            </button>
-        </div>
-
-        <!-- Mobile Navigation Menu -->
-        <div id="mobileMenu" class="hidden lg:hidden bg-sand-100 border-b border-sand-200 px-4 pt-2 pb-4 space-y-2 text-sm font-medium">
-            <button onclick="switchView('assessmentView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500">1. แบบประเมินร่างกาย & จุดอ่อน</button>
-            <button onclick="switchView('profileView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500">2. ผลวิเคราะห์ทางชีวกลศาสตร์</button>
-            <button onclick="switchView('modulesView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500">3. คลังมอดูลการฝึกเฉพาะคุณ</button>
-            <button onclick="switchView('scheduleView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500">4. ตารางซ้อมประจำสัปดาห์</button>
-            <button onclick="switchView('periodizationView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500">5. กราฟแผน 12 สัปดาห์</button>
-            <button onclick="switchView('toolsView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500">6. เครื่องมือคำนวณ & ไทม์เมอร์รอบพัก</button>
-        </div>
-    </header>
-
-    <!-- Main Views Container -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
-        <!-- ================= PAGE 1: DIAGNOSTIC ASSESSMENT VIEW ================= -->
-        <section id="assessmentView" class="page-view space-y-6">
-            <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
-                <div>
-                    <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
-                        หน้า 1/6: ประเมินร่างกาย & จุดอ่อน
-                    </span>
-                    <h2 class="font-heading font-bold text-2xl text-slatecustom-800">ระบุข้อมูลและปัญหาของคุณเพื่อออกแบบแผนซ้อม</h2>
-                    <p class="text-slate-600 text-sm mt-1">
-                        ระบบจะนำข้อมูลของคุณไปประมวลผลด้วยอัลกอริทึมทางสรีรวิทยา เพื่อจัดเตรียมมอดูลและโครงสร้างตารางซ้อมที่เหมาะกับคุณโดยเฉพาะ
-                    </p>
-                </div>
-
-                <form id="assessmentForm" class="space-y-6 text-xs md:text-sm">
-                    <!-- Basic Info Inputs -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-sand-50 rounded-xl border border-sand-200">
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">เพศ / อายุ (ปี):</label>
-                            <div class="flex gap-2">
-                                <select id="inputGender" class="w-1/2 p-2 bg-white border border-sand-300 rounded-lg text-slate-800 font-medium">
-                                    <option value="male" selected>ชาย</option>
-                                    <option value="female">หญิง</option>
-                                </select>
-                                <input type="number" id="inputAge" value="27" min="15" max="70" class="w-1/2 p-2 bg-white border border-sand-300 rounded-lg text-center font-bold text-slate-800">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">น้ำหนักตัว (kg) / % Bodyfat:</label>
-                            <div class="flex gap-2">
-                                <input type="number" id="inputWeight" value="75" min="40" max="120" class="w-1/2 p-2 bg-white border border-sand-300 rounded-lg text-center font-bold text-slate-800">
-                                <input type="number" id="inputFat" value="18" min="5" max="45" class="w-1/2 p-2 bg-white border border-sand-300 rounded-lg text-center font-bold text-slate-800">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">ประสบการณ์การปีนผา:</label>
-                            <select id="inputExp" class="w-full p-2 bg-white border border-sand-300 rounded-lg text-slate-800 font-medium">
-                                <option value="beg_1">น้อยกว่า 1 ปี (มือใหม่เริ่มต้น)</option>
-                                <option value="beg_2" selected>1 ปี - 2 ปี (มือใหม่พัฒนาการ)</option>
-                                <option value="int_3">2 ปี - 4 ปี (ระดับกลาง)</option>
-                                <option value="adv">4 ปีขึ้นไป (ระดับสูง)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">เป้าหมายการปีน:</label>
-                            <select id="inputGoal" class="w-full p-2 bg-white border border-sand-300 rounded-lg text-slate-800 font-medium">
-                                <option value="both" selected>เน้นทั้ง Bouldering & Lead</option>
-                                <option value="boulder">เน้นเฉพาะ Bouldering</option>
-                                <option value="lead">เน้นเฉพาะ Lead Climbing</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Weakness Selection -->
-                    <div class="space-y-3">
-                        <label class="block font-heading font-bold text-slatecustom-800 text-base">
-                            🎯 เลือกจุดอ่อน ปัญหา หรือข้อจำกัดที่คุณมีอยู่ (เลือกได้มากกว่า 1 ข้อ):
-                        </label>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                            <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
-                                <input type="checkbox" name="weakness" value="finger" checked class="mt-1 accent-terracotta-500 w-4 h-4">
-                                <div>
-                                    <span class="font-bold text-slate-800 block">🖐️ นิ้วมือไม่มีแรง / ตึงเอ็นข้อต่อ</span>
-                                    <span class="text-xs text-slate-500">จับโฮลด์เล็ก (Crimp) ไม่ไหว นิ้วล้าง่าย หรือเคยเจ็บเอ็น A2/A4</span>
-                                </div>
-                            </label>
-
-                            <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
-                                <input type="checkbox" name="weakness" value="hip_back" checked class="mt-1 accent-terracotta-500 w-4 h-4">
-                                <div>
-                                    <span class="font-bold text-slate-800 block">📐 สะโพกตึง / หลังแข็ง / แอ่นสะโพกไม่ได้</span>
-                                    <span class="text-xs text-slate-500">เหยียบเท้าสูงยาก สะโพกเด้งออกห่างจากผนัง บิดสะโพกเข้ามุมไม่ได้</span>
-                                </div>
-                            </label>
-
-                            <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
-                                <input type="checkbox" name="weakness" value="endurance" class="mt-1 accent-terracotta-500 w-4 h-4">
-                                <div>
-                                    <span class="font-bold text-slate-800 block">🫁 แขนล้าเร็ว (Pumped) / ความทนทานต่ำ</span>
-                                    <span class="text-xs text-slate-500">ปีนเส้นยาวไม่จบ ท่อนแขนแข็งเร็ว สลัดมือพัก (Rest) ไม่เป็น</span>
-                                </div>
-                            </label>
-
-                            <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
-                                <input type="checkbox" name="weakness" value="footwork" class="mt-1 accent-terracotta-500 w-4 h-4">
-                                <div>
-                                    <span class="font-bold text-slate-800 block">🦶 ทักษะการวางเท้า / การจัดระเบียบร่างกาย</span>
-                                    <span class="text-xs text-slate-500">วางเท้าเสียงดัง เท้าลื่นบ่อย โหนแขนมากเกินไป ไม่ถ่ายน้ำหนักลงเท้า</span>
-                                </div>
-                            </label>
-
-                            <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
-                                <input type="checkbox" name="weakness" value="core_push" class="mt-1 accent-terracotta-500 w-4 h-4">
-                                <div>
-                                    <span class="font-bold text-slate-800 block">💪 แกนกลางอ่อน / ขาดกำลังกล้ามเนื้อดัน</span>
-                                    <span class="text-xs text-slate-500">ลำตัวลอยหลุดจากผนัง (Feet off) มีอาการไหล่ห่อ เจ็บข้อศอกด้านใน</span>
-                                </div>
-                            </label>
-
-                            <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
-                                <input type="checkbox" name="weakness" value="high_weight" class="mt-1 accent-terracotta-500 w-4 h-4">
-                                <div>
-                                    <span class="font-bold text-slate-800 block">⚖️ น้ำหนักตัวมากเทียบกับแรงจับ</span>
-                                    <span class="text-xs text-slate-500">รู้สึกแรงถ่วงเยอะ เพิ่มความเสี่ยงเอ็นนิ้วและข้อต่อเมื่อปีนมุมชัน</span>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Days Availability -->
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-sand-100 rounded-xl border border-sand-200">
-                        <div>
-                            <label class="font-heading font-bold text-slatecustom-800 text-sm block">🗓️ จำนวนวันที่สะดวกฝึกซ้อมต่อสัปดาห์:</label>
-                            <span class="text-xs text-slate-500">ระบบจะจัดเรียงมอดูลตามกฎพักฟื้นระบบประสาทให้อัตโนมัติ</span>
-                        </div>
-                        <div class="flex gap-2">
-                            <label class="px-3 py-2 bg-white border border-sand-300 rounded-lg cursor-pointer flex items-center space-x-2">
-                                <input type="radio" name="daysPerWeek" value="3" checked class="accent-terracotta-500">
-                                <span class="font-bold">3 วัน/สัปดาห์</span>
-                            </label>
-                            <label class="px-3 py-2 bg-white border border-sand-300 rounded-lg cursor-pointer flex items-center space-x-2">
-                                <input type="radio" name="daysPerWeek" value="4" class="accent-terracotta-500">
-                                <span class="font-bold">4 วัน/สัปดาห์</span>
-                            </label>
-                            <label class="px-3 py-2 bg-white border border-sand-300 rounded-lg cursor-pointer flex items-center space-x-2">
-                                <input type="radio" name="daysPerWeek" value="5" class="accent-terracotta-500">
-                                <span class="font-bold">5 วัน/สัปดาห์</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <button type="button" id="generateBtn" class="w-full py-4 bg-terracotta-500 hover:bg-terracotta-600 text-white font-heading font-bold text-base rounded-xl shadow-md transition-transform active:scale-[0.99] flex items-center justify-center gap-2">
-                        <span>⚡ ประมวลผล และไปยังหน้าผลวิเคราะห์ (Generate & Go to Results) ➔</span>
-                    </button>
-                </form>
+            <div>
+                <h1 class="font-heading font-bold text-lg md:text-xl text-slatecustom-800 leading-tight">CLIMBFIT DYNAMIC PRO</h1>
+                <p class="text-xs text-slate-500">ระบบวางแผนและประเมินสรีรวิทยาการปีนผาครบวงจร</p>
             </div>
-        </section>
+        </div>
+        
+        <nav class="hidden lg:flex space-x-2 text-xs font-medium">
+            <button onclick="switchView('assessmentView')" id="nav-assessmentView" class="nav-link px-3 py-2 hover:text-terracotta-500 transition-colors active">1. แบบประเมิน</button>
+            <button onclick="switchView('profileView')" id="nav-profileView" class="nav-link px-3 py-2 hover:text-terracotta-500 transition-colors">2. ผลวิเคราะห์</button>
+            <button onclick="switchView('modulesView')" id="nav-modulesView" class="nav-link px-3 py-2 hover:text-terracotta-500 transition-colors">3. คลัง Module (A–F)</button>
+            <button onclick="switchView('scheduleView')" id="nav-scheduleView" class="nav-link px-3 py-2 hover:text-terracotta-500 transition-colors">4. ตารางซ้อมสัปดาห์</button>
+            <button onclick="switchView('periodizationView')" id="nav-periodizationView" class="nav-link px-3 py-2 hover:text-terracotta-500 transition-colors">5. แผน 12 สัปดาห์</button>
+            <button onclick="switchView('toolsView')" id="nav-toolsView" class="nav-link px-3 py-2 hover:text-terracotta-500 transition-colors">6. ไทม์เมอร์ & คำนวณ</button>
+        </nav>
 
-        <!-- ================= PAGE 2: ATHLETE DIAGNOSTIC VIEW ================= -->
-        <section id="profileView" class="page-view hidden space-y-6">
-            <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
-                <div class="border-b border-sand-200 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                        <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
-                            หน้า 2/6: ผลการประเมินสรีรวิทยา
-                        </span>
-                        <h2 id="customProfileTitle" class="font-heading font-bold text-2xl text-slatecustom-800">ผลการวิเคราะห์ชีวกลศาสตร์เฉพาะคุณ</h2>
-                    </div>
-                    <div id="userBadgeSummary" class="flex flex-wrap gap-2 text-xs">
-                        <!-- Dynamic Badges -->
-                    </div>
-                </div>
+        <button id="mobileMenuBtn" onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-lg bg-sand-200 text-slate-700 hover:bg-sand-300">
+            <i class="fa-solid fa-bars mr-1"></i>
+        </button>
+    </div>
 
-                <p id="customProfileDesc" class="text-slate-600 text-sm md:text-base leading-relaxed">
-                    <!-- Dynamic Summary Description -->
+    <!-- Mobile Navigation Menu -->
+    <div id="mobileMenu" class="hidden lg:hidden bg-sand-100 border-b border-sand-200 px-4 pt-2 pb-4 space-y-2 text-sm font-medium">
+        <button onclick="switchView('assessmentView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500"><i class="fa-solid fa-clipboard-list w-6"></i> 1. แบบประเมินร่างกาย & จุดอ่อน</button>
+        <button onclick="switchView('profileView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500"><i class="fa-solid fa-chart-pie w-6"></i> 2. ผลวิเคราะห์ทางชีวกลศาสตร์</button>
+        <button onclick="switchView('modulesView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500"><i class="fa-solid fa-book-open w-6"></i> 3. คลัง Module การฝึกซ้อม (Modules A–F)</button>
+        <button onclick="switchView('scheduleView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500"><i class="fa-solid fa-calendar-days w-6"></i> 4. ตารางซ้อมประจำสัปดาห์</button>
+        <button onclick="switchView('periodizationView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500"><i class="fa-solid fa-chart-line w-6"></i> 5. แผนระยะยาว 12 สัปดาห์</button>
+        <button onclick="switchView('toolsView'); toggleMobileMenu()" class="block w-full text-left py-2 hover:text-terracotta-500"><i class="fa-solid fa-stopwatch w-6"></i> 6. ไทม์เมอร์พัก & คำนวณภาระนิ้ว</button>
+    </div>
+</header>
+
+<!-- Main Views Container -->
+<main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+    <!-- ================= PAGE 1: DIAGNOSTIC ASSESSMENT VIEW ================= -->
+    <section id="assessmentView" class="page-view space-y-6">
+        <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
+            <div>
+                <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                    <i class="fa-solid fa-user-check mr-1"></i> หน้า 1/6: ประเมินร่างกาย & ระบุจุดอ่อน
+                </span>
+                <h2 class="font-heading font-bold text-2xl text-slatecustom-800">ระบุข้อมูลนักกีฬาและข้อจำกัดเพื่อสร้างโปรแกรมซ้อมเฉพาะคุณ</h2>
+                <p class="text-slate-600 text-sm mt-1">
+                    ระบบประมวลผลอัลกอริทึมสรีรวิทยาจะคัดสรรคลัง Module (A–F) พร้อมคำนวณกราฟความสมดุลและจัดตารางซ้อมรายสัปดาห์ให้โดยอัตโนมัติ
                 </p>
-
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-                    <!-- Radar Chart -->
-                    <div class="lg:col-span-6 bg-sand-50 p-4 rounded-xl border border-sand-200">
-                        <h3 class="font-heading font-semibold text-base text-slatecustom-800 mb-2 text-center">
-                            กราฟจุดแข็ง/จุดอ่อน ปัจจุบัน vs เป้าหมาย 12 สัปดาห์
-                        </h3>
-                        <div class="chart-container">
-                            <canvas id="radarChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Recommendation Cards -->
-                    <div id="dynamicInsightsContainer" class="lg:col-span-6 space-y-4">
-                        <!-- Dynamic Insights Injected Here -->
-                    </div>
-                </div>
-
-                <!-- Page Navigation Controls -->
-                <div class="flex justify-between items-center border-t border-sand-200 pt-6">
-                    <button onclick="switchView('assessmentView')" class="px-4 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-semibold">
-                        ⬅️ ย้อนกลับ: แก้ไขข้อมูล
-                    </button>
-                    <button onclick="switchView('modulesView')" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-bold shadow-sm">
-                        ถัดไป: คลังมอดูลการฝึก ➔
-                    </button>
-                </div>
             </div>
-        </section>
 
-        <!-- ================= PAGE 3: TAILORED MODULES HUB VIEW ================= -->
-        <section id="modulesView" class="page-view hidden space-y-6">
-            <div class="space-y-6">
-                <div class="bg-white rounded-2xl p-6 border border-sand-200 shadow-sm space-y-4">
-                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                        <div>
-                            <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
-                                หน้า 3/6: คลังมอดูลที่ได้รับการจัดสรร
-                            </span>
-                            <h2 class="font-heading font-bold text-2xl text-slatecustom-800">คลังมอดูลการฝึกซ้อม (Modules A - F)</h2>
-                            <p class="text-slate-600 text-sm mt-1">มอดูลที่มีแถบ <span class="text-terracotta-600 font-bold">"เน้นเป็นพิเศษ (High Priority)"</span> ถูกคัดเลือกให้แก้จุดอ่อนของคุณ</p>
+            <form id="assessmentForm" class="space-y-6 text-xs md:text-sm">
+                <!-- Basic Info Inputs -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 bg-sand-50 rounded-xl border border-sand-200">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">เพศ / อายุ (ปี):</label>
+                        <div class="flex gap-2">
+                            <select id="inputGender" class="w-1/2 p-2 bg-white border border-sand-300 rounded-lg text-slate-800 font-medium">
+                                <option value="male" selected>ชาย</option>
+                                <option value="female">หญิง</option>
+                            </select>
+                            <input type="number" id="inputAge" value="27" min="15" max="70" class="w-1/2 p-2 bg-white border border-sand-300 rounded-lg text-center font-bold text-slate-800">
                         </div>
-
-                        <!-- Module Category Filters -->
-                        <div class="flex flex-wrap gap-1.5 bg-sand-100 p-1 rounded-xl text-xs font-medium border border-sand-200">
-                            <button class="mod-filter active px-3 py-1.5 rounded-lg bg-white shadow-sm text-slate-800" data-filter="all">ทั้งหมด</button>
-                            <button class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="prep">วอร์มอัพ</button>
-                            <button class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="strength">นิ้ว/กำลัง</button>
-                            <button class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="climb">ปีนจริง (B/L)</button>
-                            <button class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="mobility">สะโพก/ฟื้นฟู</button>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">น้ำหนักตัว (kg) / % ไขมัน:</label>
+                        <div class="flex gap-2">
+                            <input type="number" id="inputWeight" value="70" min="40" max="120" class="w-1/2 p-2 bg-white border border-sand-300 rounded-lg text-center font-bold text-slate-800">
+                            <input type="number" id="inputFat" value="16" min="5" max="45" class="w-1/2 p-2 bg-white border border-sand-300 rounded-lg text-center font-bold text-slate-800">
                         </div>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">ประสบการณ์การปีนผา:</label>
+                        <select id="inputExp" class="w-full p-2 bg-white border border-sand-300 rounded-lg text-slate-800 font-medium">
+                            <option value="beg_1">น้อยกว่า 1 ปี (มือใหม่เริ่มต้น)</option>
+                            <option value="beg_2" selected>1 ปี - 2 ปี (มือใหม่พัฒนาการ)</option>
+                            <option value="int_3">2 ปี - 4 ปี (ระดับกลาง)</option>
+                            <option value="adv">4 ปีขึ้นไป (ระดับสูง)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">เป้าหมายหลักการปีน:</label>
+                        <select id="inputGoal" class="w-full p-2 bg-white border border-sand-300 rounded-lg text-slate-800 font-medium">
+                            <option value="both" selected>เน้นทั้ง Bouldering & Lead</option>
+                            <option value="boulder">เน้นเฉพาะ Bouldering (กำลังสูงสุด)</option>
+                            <option value="lead">เน้นเฉพาะ Lead Climbing (ความทนทาน)</option>
+                        </select>
                     </div>
                 </div>
 
-                <!-- Modules Grid -->
-                <div id="modulesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Dynamic Modules Injected Here -->
+                <!-- Weakness Selection -->
+                <div class="space-y-3">
+                    <label class="block font-heading font-bold text-slatecustom-800 text-base">
+                        <i class="fa-solid fa-bullseye text-terracotta-500 mr-1"></i> เลือกจุดอ่อน ปัญหา หรือข้อจำกัดที่คุณต้องการพัฒนา (เลือกได้มากกว่า 1 ข้อ):
+                    </label>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
+                            <input type="checkbox" name="weakness" value="finger" checked class="mt-1 accent-terracotta-500 w-4 h-4">
+                            <div>
+                                <span class="font-bold text-slate-800 block"><i class="fa-solid fa-hand text-amber-600 mr-1"></i> นิ้วมือไม่มีแรง / เอ็นตึง</span>
+                                <span class="text-xs text-slate-500">จับโฮลด์เล็ก (Crimp) ไม่ไหว นิ้วล้าง่าย หรือเคยเจ็บเอ็น A2/A4</span>
+                            </div>
+                        </label>
+
+                        <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
+                            <input type="checkbox" name="weakness" value="hip_back" checked class="mt-1 accent-terracotta-500 w-4 h-4">
+                            <div>
+                                <span class="font-bold text-slate-800 block"><i class="fa-solid fa-child text-purple-600 mr-1"></i> สะโพกตึง / หลังแข็ง</span>
+                                <span class="text-xs text-slate-500">เหยียบเท้าสูงยาก สะโพกเด้งออกห่างจากผนัง บิดสะโพกเข้ามุมไม่ได้</span>
+                            </div>
+                        </label>
+
+                        <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
+                            <input type="checkbox" name="weakness" value="endurance" class="mt-1 accent-terracotta-500 w-4 h-4">
+                            <div>
+                                <span class="font-bold text-slate-800 block"><i class="fa-solid fa-lungs text-red-600 mr-1"></i> แขนล้าเร็ว (Pumped)</span>
+                                <span class="text-xs text-slate-500">ปีนเส้นยาวไม่จบ ท่อนแขนแข็งเร็ว สลัดมือพัก (Micro-shakes) ไม่เป็น</span>
+                            </div>
+                        </label>
+
+                        <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
+                            <input type="checkbox" name="weakness" value="footwork" class="mt-1 accent-terracotta-500 w-4 h-4">
+                            <div>
+                                <span class="font-bold text-slate-800 block"><i class="fa-solid fa-shoe-prints text-blue-600 mr-1"></i> ทักษะวางเท้า / สมดุล</span>
+                                <span class="text-xs text-slate-500">วางเท้าเสียงดัง เท้าลื่นบ่อย โหนแขนมากเกินไป ไม่ถ่ายน้ำหนักลงเท้า</span>
+                            </div>
+                        </label>
+
+                        <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
+                            <input type="checkbox" name="weakness" value="core_push" class="mt-1 accent-terracotta-500 w-4 h-4">
+                            <div>
+                                <span class="font-bold text-slate-800 block"><i class="fa-solid fa-dumbbell text-teal-600 mr-1"></i> แกนกลางอ่อน / กล้ามเนื้อดัน</span>
+                                <span class="text-xs text-slate-500">ลำตัวลอยหลุดจากผนัง (Feet off) มีอาการไหล่ห่อ เจ็บข้อศอกด้านใน</span>
+                            </div>
+                        </label>
+
+                        <label class="p-3 bg-sand-50 rounded-xl border border-sand-200 flex items-start space-x-3 cursor-pointer hover:border-terracotta-500 transition-colors">
+                            <input type="checkbox" name="weakness" value="high_weight" class="mt-1 accent-terracotta-500 w-4 h-4">
+                            <div>
+                                <span class="font-bold text-slate-800 block"><i class="fa-solid fa-weight-scale text-orange-600 mr-1"></i> น้ำหนักตัวเทียบแรงจับ</span>
+                                <span class="text-xs text-slate-500">รู้สึกแรงถ่วงเยอะ เพิ่มความเสี่ยงเอ็นนิ้วและข้อต่อเมื่อปีนมุมชัน</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
 
-                <!-- Page Navigation Controls -->
-                <div class="bg-white rounded-2xl p-4 border border-sand-200 flex justify-between items-center">
-                    <button onclick="switchView('profileView')" class="px-4 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-semibold">
-                        ⬅️ ย้อนกลับ: ผลวิเคราะห์
-                    </button>
-                    <button onclick="switchView('scheduleView')" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-bold shadow-sm">
-                        ถัดไป: ตารางซ้อมประจำสัปดาห์ ➔
-                    </button>
+                <!-- Days Availability -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-sand-100 rounded-xl border border-sand-200">
+                    <div>
+                        <label class="font-heading font-bold text-slatecustom-800 text-sm block">
+                            <i class="fa-regular fa-calendar-check text-terracotta-500 mr-1"></i> จำนวนวันที่สะดวกฝึกซ้อมต่อสัปดาห์:
+                        </label>
+                        <span class="text-xs text-slate-500">ระบบจะจัดเรียง Module ตามกฎพักฟื้นระบบประสาทให้อัตโนมัติ</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <label class="px-3 py-2 bg-white border border-sand-300 rounded-lg cursor-pointer flex items-center space-x-2 hover:border-terracotta-500">
+                            <input type="radio" name="daysPerWeek" value="3" checked class="accent-terracotta-500">
+                            <span class="font-bold">3 วัน/สัปดาห์</span>
+                        </label>
+                        <label class="px-3 py-2 bg-white border border-sand-300 rounded-lg cursor-pointer flex items-center space-x-2 hover:border-terracotta-500">
+                            <input type="radio" name="daysPerWeek" value="4" class="accent-terracotta-500">
+                            <span class="font-bold">4 วัน/สัปดาห์</span>
+                        </label>
+                        <label class="px-3 py-2 bg-white border border-sand-300 rounded-lg cursor-pointer flex items-center space-x-2 hover:border-terracotta-500">
+                            <input type="radio" name="daysPerWeek" value="5" class="accent-terracotta-500">
+                            <span class="font-bold">5 วัน/สัปดาห์</span>
+                        </label>
+                    </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- ================= PAGE 4: CUSTOMIZED WEEKLY SCHEDULE VIEW ================= -->
-        <section id="scheduleView" class="page-view hidden space-y-6">
-            <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
+                <button type="button" onclick="processAssessment()" class="w-full py-4 bg-terracotta-500 hover:bg-terracotta-600 text-white font-heading font-bold text-base rounded-xl shadow-md transition-transform active:scale-[0.99] flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>ประมวลผล และไปยังหน้าผลวิเคราะห์ (Generate & Go to Results)</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- ================= PAGE 2: ATHLETE DIAGNOSTIC VIEW ================= -->
+    <section id="profileView" class="page-view hidden space-y-6">
+        <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
+            <div class="border-b border-sand-200 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
-                        หน้า 4/6: โครงสร้างตารางซ้อมประจำสัปดาห์
+                        <i class="fa-solid fa-chart-line mr-1"></i> หน้า 2/6: ผลการประเมินสรีรวิทยา
                     </span>
-                    <h2 id="scheduleTitle" class="font-heading font-bold text-2xl text-slatecustom-800">ตารางซ้อมรายวันตามเวลาของคุณ</h2>
-                    <p class="text-slate-600 text-sm mt-1">
-                        จัดเรียงตามหลักสรีรวิทยา เพื่อป้องกันความล้าของระบบประสาทส่วนกลาง (CNS) และเปิดโอกาสให้เนื้อเยื่อเกี่ยวพันสังเคราะห์คอลลาเจน
-                    </p>
+                    <h2 id="customProfileTitle" class="font-heading font-bold text-2xl text-slatecustom-800">ผลการวิเคราะห์ชีวกลศาสตร์เฉพาะคุณ</h2>
                 </div>
-
-                <!-- Dynamic Weekly Selector Tabs -->
-                <div id="weeklyTabs" class="flex overflow-x-auto custom-scrollbar border-b border-sand-200 space-x-2 pb-2">
-                    <!-- Dynamic Day Tabs -->
+                <div id="userBadgeSummary" class="flex flex-wrap gap-2 text-xs">
+                    <!-- Dynamic Badges -->
                 </div>
+            </div>
 
-                <!-- Day Detail View Panel -->
-                <div id="dayDetailPanel" class="bg-sand-50 p-6 rounded-xl border border-sand-200 space-y-6">
-                    <!-- Dynamic content injected by JS -->
-                </div>
+            <p id="customProfileDesc" class="text-slate-600 text-sm md:text-base leading-relaxed">
+                <!-- Dynamic Summary Description -->
+            </p>
 
-                <!-- Sequencing Rules Banner -->
-                <div class="p-4 bg-slatecustom-800 text-white rounded-xl space-y-3">
-                    <h3 class="font-heading font-semibold text-base flex items-center gap-2">
-                        <span>🧠</span> กฎทางสรีรวิทยาที่ใช้ในการจัดเรียงตารางของคุณ
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                <!-- Radar Chart -->
+                <div class="lg:col-span-6 bg-sand-50 p-4 rounded-xl border border-sand-200">
+                    <h3 class="font-heading font-semibold text-base text-slatecustom-800 mb-2 text-center">
+                        กราฟจุดแข็ง/จุดอ่อน ปัจจุบัน vs เป้าหมาย 12 สัปดาห์
                     </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-300">
-                        <div class="p-3 bg-slatecustom-700/50 rounded-lg">
-                            <span class="font-bold text-amber-400 block mb-1">1. Module B (ฝึกนิ้ว) ต้องอยู่หน้า C/D เสมอ</span>
-                            การฝึกนิ้วต้องทำขณะระบบประสาทสดใหม่ หากทำหลังปีนจริง แรงจับที่ตกจะทำให้นิ้วผิดรูป เกิดบาดเจ็บเอ็น A2 ได้ง่าย
-                        </div>
-                        <div class="p-3 bg-slatecustom-700/50 rounded-lg">
-                            <span class="font-bold text-amber-400 block mb-1">2. การจัดวัน Rest / Active Stretch</span>
-                            เนื้อเยื่อเอ็น (Tendon & Ligament) ต้องการเวลาอย่างน้อย 48 ชั่วโมงในการซ่อมแซมคอลลาเจนหลังการฝึกหนัก
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Page Navigation Controls -->
-                <div class="flex justify-between items-center border-t border-sand-200 pt-6">
-                    <button onclick="switchView('modulesView')" class="px-4 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-semibold">
-                        ⬅️ ย้อนกลับ: คลังมอดูล
-                    </button>
-                    <button onclick="switchView('periodizationView')" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-bold shadow-sm">
-                        ถัดไป: แผนระยะยาว 12 สัปดาห์ ➔
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================= PAGE 5: 12-WEEK MACROCYCLE VIEW ================= -->
-        <section id="periodizationView" class="page-view hidden space-y-6">
-            <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
-                            หน้า 5/6: การวางแผนระยะยาว
-                        </span>
-                        <h2 class="font-heading font-bold text-2xl text-slatecustom-800">กราฟภาระการฝึกซ้อม 12 สัปดาห์ (Macrocycle Plan)</h2>
-                        <p class="text-slate-600 text-sm mt-1">วางรอบภาระงานสลับช่วงพักผ่อน (Deload Weeks) เพื่อป้องกันอาการบาดเจ็บสะสม</p>
-                    </div>
-
-                    <div class="flex items-center space-x-2 text-xs font-medium">
-                        <button id="toggleVolumeBtn" class="px-3 py-1.5 bg-terracotta-500 text-white rounded-lg shadow-sm">แสดงปริมาณงาน (Volume)</button>
-                        <button id="toggleIntensityBtn" class="px-3 py-1.5 bg-sand-200 text-slate-700 rounded-lg hover:bg-sand-300">แสดงความเข้มข้น (Intensity)</button>
-                    </div>
-                </div>
-
-                <!-- Line Chart -->
-                <div class="bg-sand-50 p-4 rounded-xl border border-sand-200">
                     <div class="chart-container">
-                        <canvas id="macrocycleChart"></canvas>
+                        <canvas id="radarChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Macro Phases Breakdown -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
-                    <div class="p-4 bg-sand-100 rounded-xl border border-sand-200">
-                        <span class="font-bold text-terracotta-600 block text-sm mb-1">Block 1 (สัปดาห์ 1-5)</span>
-                        <p id="block1Desc" class="text-slate-600">เน้นการปรับตัวของเนื้อเยื่อเอ็น (Tissue Adaptation), เทคนิคเบื้องต้น และยืดคลายสะโพก</p>
-                    </div>
-                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200">
-                        <span class="font-bold text-amber-700 block text-sm mb-1">Deload 1 (สัปดาห์ที่ 6)</span>
-                        <p class="text-amber-800">ลดภาระงานลง 50% งดโหนหนัก เพื่อให้คอลลาเจนเอ็นข้อต่อสังเคราะห์ซ่อมแซมได้เต็มที่</p>
-                    </div>
-                    <div class="p-4 bg-sand-100 rounded-xl border border-sand-200">
-                        <span class="font-bold text-terracotta-600 block text-sm mb-1">Block 2 (สัปดาห์ 7-11)</span>
-                        <p id="block2Desc" class="text-slate-600">ย้ายโฟกัสไปที่กำลังปีนสูงสุด หรือ ความทนทานเฉพาะทางตามเป้าหมายหลักของคุณ</p>
-                    </div>
-                    <div class="p-4 bg-amber-50 rounded-xl border border-amber-200">
-                        <span class="font-bold text-amber-700 block text-sm mb-1">Deload 2 (สัปดาห์ที่ 12)</span>
-                        <p class="text-amber-800">ลดภาระงาน 50% เตรียมร่างกายทดสอบส่งเกรดใหม่ (Peak Performance Assessment)</p>
-                    </div>
-                </div>
-
-                <!-- Page Navigation Controls -->
-                <div class="flex justify-between items-center border-t border-sand-200 pt-6">
-                    <button onclick="switchView('scheduleView')" class="px-4 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-semibold">
-                        ⬅️ ย้อนกลับ: ตารางซ้อม
-                    </button>
-                    <button onclick="switchView('toolsView')" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-bold shadow-sm">
-                        ถัดไป: เครื่องมือคำนวณ & ไทม์เมอร์ ➔
-                    </button>
+                <!-- Recommendation Cards -->
+                <div id="dynamicInsightsContainer" class="lg:col-span-6 space-y-4">
+                    <!-- Dynamic Insights Injected Here -->
                 </div>
             </div>
-        </section>
 
-        <!-- ================= PAGE 6: PRACTICAL TOOLS & WORK/REST TIMERS VIEW ================= -->
-        <section id="toolsView" class="page-view hidden space-y-6">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
-                <!-- Tool 1: Hangboard Calculator & Multi-Phase Timer -->
-                <div class="lg:col-span-6 bg-white rounded-2xl p-6 border border-sand-200 shadow-sm space-y-6">
+            <!-- Page Navigation Controls -->
+            <div class="flex justify-between items-center border-t border-sand-200 pt-6">
+                <button onclick="switchView('assessmentView')" class="px-4 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left"></i> ย้อนกลับ: แก้ไขข้อมูล
+                </button>
+                <button onclick="switchView('modulesView')" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5">
+                    ถัดไป: คลัง Module การฝึก <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= PAGE 3: TAILORED MODULES HUB VIEW ================= -->
+    <section id="modulesView" class="page-view hidden space-y-6">
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl p-6 border border-sand-200 shadow-sm space-y-4">
+                <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
                     <div>
                         <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
-                            หน้า 6/6: เครื่องมือสำหรับ Module B
+                            <i class="fa-solid fa-layer-group mr-1"></i> หน้า 3/6: คลัง Module การฝึกซ้อมหลัก
                         </span>
-                        <h3 class="font-heading font-bold text-xl text-slatecustom-800">คำนวณภาระนิ้ว & ไทม์เมอร์ซ้อม-พัก (20mm)</h3>
-                        <p class="text-xs text-slate-500 mt-1">คำนวณการผ่อนน้ำหนัก พร้อมระบบไทม์เมอร์นับเวลาโหนและเวลารอบพักให้อัตโนมัติ</p>
+                        <h2 class="font-heading font-bold text-2xl text-slatecustom-800">คลัง Module การฝึกซ้อม (Modules A – F)</h2>
+                        <p class="text-slate-600 text-sm mt-1">Module ที่มีแถบ <span class="text-terracotta-600 font-bold"><i class="fa-solid fa-star mr-1"></i>"เน้นเป็นพิเศษ (High Priority)"</span> ถูกคัดเลือกเพื่อแก้ไขจุดอ่อนที่คุณระบุไว้โดยตรง</p>
                     </div>
 
-                    <!-- Calculator Input -->
-                    <div class="bg-sand-50 p-4 rounded-xl border border-sand-200 space-y-3 text-xs">
-                        <div class="flex items-center justify-between">
-                            <label class="font-semibold text-slate-700">น้ำหนักตัวของคุณ (kg):</label>
-                            <input type="number" id="calcBW" value="75" class="w-20 px-2 py-1 bg-white border border-sand-300 rounded text-center font-bold text-slate-800">
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <label class="font-semibold text-slate-700">ระดับความตึงที่แนะนำ (Target Load):</label>
-                            <select id="calcRpe" class="px-2 py-1 bg-white border border-sand-300 rounded text-slate-800 font-medium">
-                                <option value="0.75">RPE 7 (ปลอดภัย - สำหรับช่วงเริ่มต้น)</option>
-                                <option value="0.80" selected>RPE 8 (แนะนำ - Submaximal Target)</option>
-                                <option value="0.85">RPE 8.5 (สำหรับผู้มีประสบการณ์ > 2 ปี)</option>
-                            </select>
-                        </div>
-                        <div class="p-3 bg-terracotta-500/10 rounded-lg text-terracotta-700 font-medium flex justify-between items-center">
-                            <span>ประมาณการน้ำหนักที่นิ้วต้องรับ:</span>
-                            <span id="targetHangWeight" class="text-base font-bold">60.0 kg (ช่วยยันเท้า ~15 kg)</span>
-                        </div>
-                    </div>
-
-                    <!-- Timer Options -->
-                    <div class="grid grid-cols-2 gap-3 text-xs">
-                        <div>
-                            <label class="block font-semibold text-slate-700 mb-1">ระยะเวลาพักระหว่างเซต:</label>
-                            <select id="hangRestSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
-                                <option value="60">พัก 1 นาที (60s)</option>
-                                <option value="120" selected>พัก 2 นาที (120s - แนะนำ)</option>
-                                <option value="180">พัก 3 นาที (180s - ฟื้นตัว 100%)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold text-slate-700 mb-1">จำนวนเซตทั้งหมด:</label>
-                            <select id="hangSetsSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
-                                <option value="3">3 เซต</option>
-                                <option value="4" selected>4 เซต</option>
-                                <option value="5">5 เซต</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Hangboard Work/Rest Display Panel -->
-                    <div class="text-center p-6 bg-slatecustom-800 rounded-xl text-white space-y-4">
-                        <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slatecustom-700 pb-2">
-                            <span id="hangSetDisplay" class="font-bold text-amber-400">เซตที่ 1 / 4</span>
-                            <span id="hangPhaseBadge" class="px-2 py-0.5 rounded bg-terracotta-500 text-white font-semibold">เฟสโหนนิ้ว (WORK)</span>
-                        </div>
-                        
-                        <div id="hangStatus" class="text-sm font-medium tracking-wide uppercase text-amber-400">พร้อมเริ่มต้น (Density Hang 10s)</div>
-                        <div id="hangTimerDisplay" class="font-heading text-5xl font-bold tracking-tight">10.0s</div>
-                        
-                        <div class="flex justify-center space-x-3 text-xs font-semibold pt-2">
-                            <button id="startHangBtn" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 rounded-lg text-white shadow-md transition-transform active:scale-95">
-                                ▶️ เริ่มต้นการฝึก
-                            </button>
-                            <button id="pauseHangBtn" class="px-4 py-2.5 bg-slatecustom-700 hover:bg-slatecustom-600 rounded-lg text-slate-200">
-                                ⏸️ ชั่วคราว
-                            </button>
-                            <button id="resetHangBtn" class="px-4 py-2.5 bg-slatecustom-700 hover:bg-slatecustom-600 rounded-lg text-slate-300">
-                                🔄 รีเซ็ต
-                            </button>
-                        </div>
-                        <p class="text-[11px] text-slate-400">ระบบจะสลับนับถอยหลังช่วงโหน (10s) และช่วงพักสมบูรณ์ให้อัตโนมัติ</p>
+                    <!-- Module Category Filters -->
+                    <div class="flex flex-wrap gap-1.5 bg-sand-100 p-1 rounded-xl text-xs font-medium border border-sand-200">
+                        <button onclick="filterModules('all')" class="mod-filter active px-3 py-1.5 rounded-lg bg-white shadow-sm text-slate-800" data-filter="all">ทั้งหมด</button>
+                        <button onclick="filterModules('prep')" class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="prep">วอร์มอัพ</button>
+                        <button onclick="filterModules('strength')" class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="strength">นิ้ว/กำลัง</button>
+                        <button onclick="filterModules('climb')" class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="climb">ปีนจริง (B/L)</button>
+                        <button onclick="filterModules('mobility')" class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="mobility">สะโพก/ยืดเหยียด</button>
+                        <button onclick="filterModules('conditioning')" class="mod-filter px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900" data-filter="conditioning">ฟื้นฟู/ปรับสมดุล</button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Tool 2: Hip Mobility PNF Stretch & Work/Rest Timer -->
-                <div class="lg:col-span-6 bg-white rounded-2xl p-6 border border-sand-200 shadow-sm space-y-6">
-                    <div>
-                        <span class="inline-block px-3 py-1 bg-olive-600/10 text-olive-700 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
-                            หน้า 6/6: เครื่องมือสำหรับ Module E
-                        </span>
-                        <h3 class="font-heading font-bold text-xl text-slatecustom-800">คู่มือ & ไทม์เมอร์ยืดเหยียด PNF + รอบพัก</h3>
-                        <p class="text-xs text-slate-500 mt-1">กระตุ้น Autogenic Inhibition พร้อมระบบคุมเวลารอบเกร็ง รอบยืด และรอบพัก</p>
-                    </div>
-
-                    <!-- PNF Protocol Breakdown -->
-                    <div class="space-y-2 text-xs">
-                        <div class="p-2.5 bg-sand-50 rounded-lg border border-sand-200 flex justify-between items-center">
-                            <span class="font-bold text-slate-700">1. Stretch Phase:</span>
-                            <span class="text-slate-600">ยืดจนรู้สึกตึงต้านเบาๆ</span>
-                        </div>
-                        <div class="p-2.5 bg-amber-50 rounded-lg border border-amber-200 flex justify-between items-center">
-                            <span class="font-bold text-amber-800">2. Contract Phase (7 วินาที):</span>
-                            <span class="text-amber-800">เกร็งกล้ามเนื้อต้านพื้น 70% Force</span>
-                        </div>
-                        <div class="p-2.5 bg-emerald-50 rounded-lg border border-emerald-200 flex justify-between items-center">
-                            <span class="font-bold text-emerald-800">3. Relax & Deepen (30 วินาที):</span>
-                            <span class="text-emerald-800">ผ่อนคลายความเกร็ง ทิ้งสะโพกลึกลงมุมใหม่</span>
-                        </div>
-                        <div class="p-2.5 bg-blue-50 rounded-lg border border-blue-200 flex justify-between items-center">
-                            <span class="font-bold text-blue-800">4. Rest Phase (รอบพัก):</span>
-                            <span class="text-blue-800">พักคลายกล้ามเนื้อระหว่างรอบ</span>
-                        </div>
-                    </div>
-
-                    <!-- PNF Timer Config -->
-                    <div class="grid grid-cols-2 gap-3 text-xs">
-                        <div>
-                            <label class="block font-semibold text-slate-700 mb-1">ระยะเวลาพักระหว่างรอบ:</label>
-                            <select id="pnfRestSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
-                                <option value="30">พัก 30 วินาที</option>
-                                <option value="45" selected>พัก 45 วินาที (แนะนำ)</option>
-                                <option value="60">พัก 60 วินาที</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block font-semibold text-slate-700 mb-1">จำนวนรอบ (Cycles):</label>
-                            <select id="pnfSetsSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
-                                <option value="2">2 รอบต่อท่า</option>
-                                <option value="3" selected>3 รอบต่อท่า</option>
-                                <option value="4">4 รอบต่อท่า</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- PNF Display Panel -->
-                    <div class="text-center p-6 bg-slatecustom-800 rounded-xl text-white space-y-4">
-                        <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slatecustom-700 pb-2">
-                            <span id="pnfSetDisplay" class="font-bold text-emerald-400">รอบที่ 1 / 3</span>
-                            <span id="pnfPhaseBadge" class="px-2 py-0.5 rounded bg-amber-500 text-white font-semibold">เฟสเกร็งต้าน (CONTRACT)</span>
-                        </div>
-
-                        <div id="pnfStatus" class="text-sm font-medium tracking-wide uppercase text-emerald-400">พร้อมสำหรับ PNF Mobility Stretch</div>
-                        <div id="pnfTimerDisplay" class="font-heading text-5xl font-bold tracking-tight">07s</div>
-                        
-                        <div class="flex justify-center space-x-3 text-xs font-semibold pt-2">
-                            <button id="startPnfBtn" class="px-5 py-2.5 bg-olive-600 hover:bg-olive-700 rounded-lg text-white shadow-md transition-transform active:scale-95">
-                                ▶️ เริ่มต้น PNF Cycle
-                            </button>
-                            <button id="pausePnfBtn" class="px-4 py-2.5 bg-slatecustom-700 hover:bg-slatecustom-600 rounded-lg text-slate-200">
-                                ⏸️ ชั่วคราว
-                            </button>
-                            <button id="resetPnfBtn" class="px-4 py-2.5 bg-slatecustom-700 hover:bg-slatecustom-600 rounded-lg text-slate-300">
-                                🔄 รีเซ็ต
-                            </button>
-                        </div>
-                        <p class="text-[11px] text-slate-400">ระบบจะนำทาง: เกร็งต้าน (7s) ➔ ยืดผ่อนลึก (30s) ➔ พักระหว่างรอบอัตโนมัติ</p>
-                    </div>
-                </div>
-
+            <!-- Modules Grid -->
+            <div id="modulesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Modules Injected Here -->
             </div>
 
             <!-- Page Navigation Controls -->
             <div class="bg-white rounded-2xl p-4 border border-sand-200 flex justify-between items-center">
-                <button onclick="switchView('periodizationView')" class="px-4 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-semibold">
-                    ⬅️ ย้อนกลับ: แผน 12 สัปดาห์
+                <button onclick="switchView('profileView')" class="px-4 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left"></i> ย้อนกลับ: ผลวิเคราะห์
                 </button>
-                <button onclick="switchView('assessmentView')" class="px-5 py-2.5 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-bold shadow-sm">
-                    🔄 กลับไปยังแบบประเมินตั้งต้น
+                <button onclick="switchView('scheduleView')" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5">
+                    ถัดไป: ตารางซ้อมประจำสัปดาห์ <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
-        </section>
+        </div>
+    </section>
 
-    </main>
+    <!-- ================= PAGE 4: CUSTOMIZED WEEKLY SCHEDULE VIEW ================= -->
+    <section id="scheduleView" class="page-view hidden space-y-6">
+        <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-sand-200 pb-4">
+                <div>
+                    <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-calendar-check mr-1"></i> หน้า 4/6: โครงสร้างตารางซ้อมประจำสัปดาห์
+                    </span>
+                    <h2 id="scheduleTitle" class="font-heading font-bold text-2xl text-slatecustom-800">ตารางซ้อมรายวันตามเวลาของคุณ</h2>
+                    <p class="text-slate-600 text-sm mt-1">
+                        จัดเรียง Module ตามหลักสรีรวิทยา ป้องกันความล้าของระบบประสาทส่วนกลาง (CNS) และมี Checkbox ให้คุณติ๊กติดตามผลแต่ละหัวข้อการซ้อม
+                    </p>
+                </div>
+                <button onclick="resetWeeklyCheckmarks()" class="text-xs bg-sand-200 hover:bg-sand-300 text-slate-800 px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-left"></i> รีเซ็ตเครื่องหมายติ๊กถูกทั้งหมด
+                </button>
+            </div>
 
-    <!-- Modal for Module Details -->
-    <div id="moduleModal" class="fixed inset-0 bg-slatecustom-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 md:p-8 space-y-6 shadow-xl border border-sand-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <div class="flex items-start justify-between border-b border-sand-200 pb-4">
-                <div class="flex items-center space-x-3">
-                    <span id="modalCode" class="px-3 py-1 bg-terracotta-500 text-white font-bold rounded-lg text-sm">Mod A</span>
+            <!-- Schedule Table Grid Container -->
+            <div id="weeklyScheduleGrid" class="grid grid-cols-1 md:grid-cols-7 gap-4">
+                <!-- Dynamic Weekly Cards Injected Here -->
+            </div>
+
+            <!-- Sequencing Rules Banner -->
+            <div class="p-4 bg-slatecustom-800 text-white rounded-xl space-y-3 shadow-md">
+                <h3 class="font-heading font-semibold text-base flex items-center gap-2 text-amber-400">
+                    <i class="fa-solid fa-brain"></i> กฎทางสรีรวิทยาที่ใช้ในการจัดเรียงตารางของคุณ
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-slate-300">
+                    <div class="p-3 bg-slatecustom-700/50 rounded-lg border border-slatecustom-700">
+                        <span class="font-bold text-amber-300 block mb-1">1. Finger Hangs ก่อนการปีนจริง</span>
+                        การฝึกนิ้ว (Module B) ต้องอยู่ช่วงเริ่มต้นหลังวอร์มอัพ ขณะระบบประสาทสดใหม่ หากทำหลังปีนจริง แรงจับที่ตกจะทำให้นิ้วผิดรูป เกิดบาดเจ็บเอ็น A2 ได้ง่าย
+                    </div>
+                    <div class="p-3 bg-slatecustom-700/50 rounded-lg border border-slatecustom-700">
+                        <span class="font-bold text-amber-300 block mb-1">2. ระยะเวลาพักของเนื้อเยื่อเอ็น</span>
+                        เอ็นยึดข้อต่อ (Tendon & Ligament) ต้องการเวลาอย่างน้อย 48 ชั่วโมงในการซ่อมแซมคอลลาเจนหลังการฝึกแรงดึงสูง
+                    </div>
+                    <div class="p-3 bg-slatecustom-700/50 rounded-lg border border-slatecustom-700">
+                        <span class="font-bold text-amber-300 block mb-1">3. Active Recovery & Mobility Day</span>
+                        การยืดเหยียด PNF สะโพก (Module E) ช่วยให้เลือดหมุนเวียน นำสารอาหารไปเลี้ยงเนื้อเยื่อเกี่ยวพันในวันพัก
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Navigation Controls -->
+            <div class="flex justify-between items-center border-t border-sand-200 pt-6">
+                <button onclick="switchView('modulesView')" class="px-4 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left"></i> ย้อนกลับ: คลัง Module
+                </button>
+                <button onclick="switchView('periodizationView')" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5">
+                    ถัดไป: แผนระยะยาว 12 สัปดาห์ <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= PAGE 5: 12-WEEK MACROCYCLE VIEW ================= -->
+    <section id="periodizationView" class="page-view hidden space-y-6">
+        <div class="bg-white rounded-2xl p-6 md:p-8 border border-sand-200 shadow-sm space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                        <i class="fa-solid fa-chart-line mr-1"></i> หน้า 5/6: การวางแผนระยะยาว (Macrocycle)
+                    </span>
+                    <h2 class="font-heading font-bold text-2xl text-slatecustom-800">กราฟภาระการฝึกซ้อม 12 สัปดาห์ (12-Week Load Plan)</h2>
+                    <p class="text-slate-600 text-sm mt-1">วางรอบภาระงานสลับช่วงพักผ่อน (Deload Weeks) เพื่อป้องกันอาการบาดเจ็บสะสม</p>
+                </div>
+
+                <div class="flex items-center space-x-2 text-xs font-medium">
+                    <button id="toggleVolumeBtn" onclick="toggleMacroDataset('volume')" class="px-3 py-1.5 bg-terracotta-500 text-white rounded-lg shadow-sm">แสดงปริมาณงาน (Volume)</button>
+                    <button id="toggleIntensityBtn" onclick="toggleMacroDataset('intensity')" class="px-3 py-1.5 bg-sand-200 text-slate-700 rounded-lg hover:bg-sand-300">แสดงความเข้มข้น (Intensity)</button>
+                </div>
+            </div>
+
+            <!-- Line Chart -->
+            <div class="bg-sand-50 p-4 rounded-xl border border-sand-200">
+                <div class="chart-container">
+                    <canvas id="macrocycleChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Macro Phases Breakdown -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                <div class="p-4 bg-sand-100 rounded-xl border border-sand-200 space-y-1">
+                    <span class="font-bold text-terracotta-600 block text-sm">Block 1 (สัปดาห์ 1–5)</span>
+                    <p id="block1Desc" class="text-slate-600">เน้นการปรับตัวของเนื้อเยื่อเอ็น (Tissue Adaptation), เทคนิคเบื้องต้น และยืดคลายสะโพก</p>
+                </div>
+                <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
+                    <span class="font-bold text-amber-700 block text-sm">Deload 1 (สัปดาห์ที่ 6)</span>
+                    <p class="text-amber-800">ลดภาระงานลง 50% งดโหนหนัก เพื่อให้คอลลาเจนเอ็นข้อต่อสังเคราะห์ซ่อมแซมได้เต็มที่</p>
+                </div>
+                <div class="p-4 bg-sand-100 rounded-xl border border-sand-200 space-y-1">
+                    <span class="font-bold text-terracotta-600 block text-sm">Block 2 (สัปดาห์ 7–11)</span>
+                    <p id="block2Desc" class="text-slate-600">ย้ายโฟกัสไปที่กำลังปีนสูงสุด หรือ ความทนทานเฉพาะทางตามเป้าหมายหลักของคุณ</p>
+                </div>
+                <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
+                    <span class="font-bold text-amber-700 block text-sm">Deload 2 (สัปดาห์ที่ 12)</span>
+                    <p class="text-amber-800">ลดภาระงาน 50% เตรียมร่างกายทดสอบส่งเกรดใหม่ (Peak Performance Assessment)</p>
+                </div>
+            </div>
+
+            <!-- Page Navigation Controls -->
+            <div class="flex justify-between items-center border-t border-sand-200 pt-6">
+                <button onclick="switchView('scheduleView')" class="px-4 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-semibold flex items-center gap-1.5">
+                    <i class="fa-solid fa-arrow-left"></i> ย้อนกลับ: ตารางซ้อม
+                </button>
+                <button onclick="switchView('toolsView')" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5">
+                    ถัดไป: เครื่องมือคำนวณ & ไทม์เมอร์ <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= PAGE 6: PRACTICAL TOOLS & WORK/REST TIMERS VIEW ================= -->
+    <section id="toolsView" class="page-view hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Tool 1: Hangboard Calculator & Timer -->
+            <div class="lg:col-span-6 bg-white rounded-2xl p-6 border border-sand-200 shadow-sm space-y-6">
+                <div class="flex justify-between items-start">
                     <div>
-                        <h3 id="modalTitle" class="font-heading font-bold text-xl text-slatecustom-800">Warm-Up & Dynamic Activation</h3>
-                        <p id="modalDuration" class="text-xs text-slate-500">ระยะเวลา: 15-20 นาที</p>
+                        <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-stopwatch mr-1"></i> เครื่องมือ Module B
+                        </span>
+                        <h3 class="font-heading font-bold text-xl text-slatecustom-800">Hangboard Timer & คำนวณภาระนิ้ว (20mm)</h3>
+                        <p class="text-xs text-slate-500 mt-1">คำนวณน้ำหนักที่นิ้วต้องรับ พร้อมไทม์เมอร์และเสียงแจ้งเตือนอัตโนมัติ</p>
                     </div>
                 </div>
-                <button id="closeModalBtn" class="text-slate-400 hover:text-slate-700 text-xl font-bold">✕</button>
-            </div>
 
-            <div class="space-y-4 text-xs md:text-sm text-slate-600">
-                <div>
-                    <h4 class="font-heading font-bold text-slatecustom-800 text-sm mb-1">วัตถุประสงค์ทางสรีรวิทยา:</h4>
-                    <p id="modalPhysio" class="bg-sand-50 p-3 rounded-lg border border-sand-200 text-slate-700"></p>
-                </div>
-
-                <div>
-                    <h4 class="font-heading font-bold text-slatecustom-800 text-sm mb-1">อุปกรณ์ที่จำเป็น:</h4>
-                    <p id="modalEquip" class="font-medium text-slate-800"></p>
-                </div>
-
-                <div>
-                    <h4 class="font-heading font-bold text-slatecustom-800 text-sm mb-1">ขั้นตอนปฏิบัติอย่างเป็นระบบ:</h4>
-                    <ul id="modalSteps" class="list-disc pl-5 space-y-2"></ul>
-                </div>
-
-                <div id="modalCautionBox" class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 text-xs">
-                    <strong class="block mb-1">ข้อควรระวังสำคัญ:</strong>
-                    <span id="modalCaution"></span>
-                </div>
-            </div>
-
-            <div class="text-right border-t border-sand-200 pt-4">
-                <button id="closeModalBottomBtn" class="px-5 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-lg font-medium text-xs">ปิดหน้าต่าง</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="bg-slatecustom-900 text-slate-400 py-8 border-t border-slatecustom-800 text-xs mt-auto">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div>
-                <p class="font-heading font-semibold text-slate-200">ระบบวางแผนการฝึกซ้อมปีนผาแบบหลายหน้า (ClimbFit Dynamic App)</p>
-                <p class="mt-1 text-slate-500">ประมวลผลตามหลักชีวกลศาสตร์ วิทยาศาสตร์การกีฬา และสรีรวิทยาการออกกำลังกาย</p>
-            </div>
-            <p class="text-slate-500 text-center md:text-right">
-                *จัดทำขึ้นเพื่อการฝึกซ้อมกีฬา ไม่ใช่คำแนะนำทางการแพทย์
-            </p>
-        </div>
-    </footer>
-
-    <!-- JavaScript Application Logic -->
-    <script>
-        // Master Modules Base Library
-        const modulesLibrary = [
-            {
-                id: 'modA',
-                code: 'Module A',
-                title: 'Warm-Up & Dynamic Activation',
-                category: 'prep',
-                duration: '15–20 นาที',
-                equip: 'ยางยืด Resistance band, ผนังปีนระดับง่าย',
-                physio: 'เตรียมระบบประสาท เพิ่มอุณหภูมิในกล้ามเนื้อ กระตุ้นการหลั่งน้ำไขข้อ (Synovial Fluid) ในข้อต่อไหล่ สะโพก และข้อมือ',
-                steps: [
-                    'Cardio Light Warmup (5 นาที): วิ่งเหยาะๆ หรือกระโดดเชือกเบาๆ ให้หัวใจเต้นสม่ำเสมอ',
-                    'Dynamic Mobilization: หมุนข้อต่อสะโพก (Hip CARs), ข้อเท้า, ข้อข้อมือ และข้อไหล่',
-                    'Muscle Activation: ใช้ Resistance Band เล่นท่า External Rotation, Band Pull-Aparts (2 เซต x 15 ครั้ง)',
-                    'On-Wall Quiet Feet: ปีนเส้นทางง่ายกว่าเกรดสูงสุด 3-4 เกรด มุ่งเน้นการวางเท้าเงียบกริบและการบิดสะโพกเข้าหาผนัง'
-                ],
-                caution: 'ห้ามยืดเหยียดแบบ Passive Hold นานเกิน 10 วินาทีในช่วงวอร์มอัพ เพราะจะลดกำลังหดตัวสูงสุดของกล้ามเนื้อ'
-            },
-            {
-                id: 'modB',
-                code: 'Module B',
-                title: 'Finger Strength & Tissue Adaptation',
-                category: 'strength',
-                duration: '20–30 นาที',
-                equip: 'Hangboard (ขอบมาตรฐาน 20mm), เครื่องชั่งน้ำหนัก / ยางยืดช่วยพยุง',
-                physio: 'กระตุ้นการสังเคราะห์คอลลาเจน (Collagen Remodeling) ในเอ็นยึดข้อ A2/A4 และปรับตัวแบบ Submaximal โดยไม่สะสมความล้าประสาท',
-                steps: [
-                    'ตั้งค่าขอบจับมาตรฐานขนาด 20mm เท่านั้น',
-                    'โหนตัวแบบ Submaximal Density Hangs (RPE 7-8/10) โดยใช้เท้าวางช่วยยันพื้นหรือใช้ยางยืดพยุงตามน้ำหนักที่คำนวณ',
-                    'จับค้าง 10 วินาทีต่อรอบ / พักสมบูรณ์ 2-3 นาทีระหว่างรอบ',
-                    'ปฏิบัติ 3-4 รอบต่อรูปแบบการจับ (สลับระหว่าง Half Crimp 90° และ Open Drag 3 นิ้ว) รวม 6-8 รอบ'
-                ],
-                caution: 'ห้ามใช้ท่า Full Crimp (ใช้นิ้วโป้งล็อค) และงดเว้น Campus Board อย่างเด็ดขาดหากประสบการณ์น้อยกว่า 2 ปี'
-            },
-            {
-                id: 'modC',
-                code: 'Module C',
-                title: 'Bouldering & Power-Technical Skill',
-                category: 'climb',
-                duration: '60–90 นาที',
-                equip: 'ผนัง Bouldering',
-                physio: 'เน้นระบบพลังงาน ATP-CP และการเกณฑ์กำลังประสาทสูงสุด (Neuromuscular Recruitment) พร้อมฝึกทักษะจัดระเบียบร่างกาย',
-                steps: [
-                    'รูปแบบ 1 (Limit Bouldering): เลือกโจทย์ยากระดับขีดจำกัด ทำเพียง 3-4 ปัญหา/เซสชัน พัก 3-5 นาทีระหว่างรอบลองปีน',
-                    'รูปแบบ 2 (Technique & Volume): เลือกโจทย์ต่ำกว่าเกรดสูงสุด 1-2 เกรด จำนวน 6-8 ปัญหา',
-                    'ฝึกแบบฝึกหัด Hover Hands (ค้างมือนอกโฮลด์ 2 วินาทีก่อนจับ) เพื่อเกร็งแกนกลางลำตัว',
-                    'ฝึกแบบฝึกหัด Hips-to-Wall บังคับบิดสะโพกแนบผนังก่อนก้าวเท้าทุกครั้ง'
-                ],
-                caution: 'หากพบว่าแรงจับตกหรือการเคลื่อนไหวสูญเสียความแม่นยำ ให้หยุดการฝึกทันทีเพื่อป้องกันสมองจดจำแบบแผนเคลื่อนไหวที่ผิด'
-            },
-            {
-                id: 'modD',
-                code: 'Module D',
-                title: 'Lead & Power Endurance',
-                category: 'climb',
-                duration: '45–75 นาที',
-                equip: 'ผนัง Lead Climbing หรือ ผนัง Bouldering',
-                physio: 'พัฒนาความทนทานต่อกรดแลกติกของกล้ามเนื้องอนิ้วมือ (Forearm Flexors) และฝึกทักษะการพักสลัดมือ (Micro-Shakes)',
-                steps: [
-                    'โปรโตคอล 4x4s (บน Bouldering Wall): เลือก 4 ปัญหาความยาก 70-80% ปีนต่อเนื่อง 1 ถึง 4 พัก 5 นาที ปฏิบัติ 4 เซต',
-                    'โปรโตคอล Double Route Laps (บน Lead Wall): ปีนเส้นทาง Onsight Max ถึงยอด โรยตัวลงมาและปีนซ้ำทันที 1 รอบ พัก 10 นาที (ทำ 4-5 เซต)',
-                    'ฝึกการสลัดมือแบบ Micro-Shakes 3-5 วินาทีขณะอยู่ใน Rest Position บนผนังเพื่อดึงออกซิเจนกลับเข้ากล้ามเนื้อ'
-                ],
-                caution: 'ควบคุมจังหวะการหายใจและรักษา Pacing ให้สม่ำเสมอ ห้ามเกร็งจับโฮลด์แน่นเกินความจำเป็น (Over-gripping)'
-            },
-            {
-                id: 'modE',
-                code: 'Module E',
-                title: 'Hip & Lower Back Mobility Protocol',
-                category: 'mobility',
-                duration: '20–30 นาที',
-                equip: 'เสื่อโยคะ, บล็อกโยคะ',
-                physio: 'เพิ่มช่วงการเคลื่อนไหว (ROM) ข้อต่อสะโพกและกระดูกสันหลังส่วนล่าง ดึงจุดศูนย์ถ่วงเข้าหาผนัง ลดแรงดึงตกกระทบที่นิ้วมือ',
-                steps: [
-                    '90/90 Hip Stretch & Rotations: 3 เซต x 60 วินาที/ข้าง เพิ่มช่วงการหมุนเข้า/ออกของหัวกระดูกต้นขา',
-                    'Cossack Squat: 3 เซต x 8-10 ครั้ง/ข้าง เสริมความแข็งแรงกล้ามเนื้อต้นขาด้านในในมุมกว้าง',
-                    'Frog Stretch PNF: เกร็งต้าน 7 วินาที + ผ่อนยืดลึกลง 30 วินาที (3 เซต) เพื่อขยายมุมสะโพก',
-                    'Cat-Cow & Thoracic Extension: 3 เซต x 10 ครั้ง เพื่อคลายความตึงของหลังส่วนล่างและอก'
-                ],
-                caution: 'การยืด PNF ต้องทำหลังจากกล้ามเนื้ออุ่นแล้วเท่านั้น ห้ามทำกระตุกรุนแรง'
-            },
-            {
-                id: 'modF',
-                code: 'Module F',
-                title: 'Antagonist & Core Conditioning',
-                category: 'mobility',
-                duration: '20–30 นาที',
-                equip: 'ดัมเบล (2-5 kg), บาร์โหน, ยางยืด',
-                physio: 'ปรับสมดุลแรงบิดรอบข้อไหล่ ข้อศอก และกระดูกสันหลัง ป้องกันอาการไหล่ห่อและข้อศอกอักเสบ (Golfer’s Elbow)',
-                steps: [
-                    'Overhead Dumbbell Press / Push-ups: 3 เซต x 6-8 ครั้ง สร้างกำลังกล้ามเนื้อดัน (Pushing Complex)',
-                    'Wrist Extensor Curls: 3 เซต x 15-20 ครั้ง (ดัมเบล 2-5 kg) เสริมความแข็งแรงกล้ามเนื้อเหยียดข้อมือ',
-                    'Hanging Leg Raises / Pallof Press: 3 เซต x 10-12 ครั้ง เสริมความแข็งแรงแกนกลางลำตัว',
-                    'Reverse Flyes: 3 เซต x 12 ครั้ง เสริมความมั่นคงให้สะบักและหลังบน'
-                ],
-                caution: 'ใช้น้ำหนักปานกลาง เน้นการควบคุมจังหวะลง (Eccentric Phase) อย่างช้าๆ 2-3 วินาที'
-            }
-        ];
-
-        // Global State Store
-        let userProfile = {
-            gender: 'male',
-            age: 27,
-            weight: 75,
-            fat: 18,
-            exp: 'beg_2',
-            goal: 'both',
-            weaknesses: ['finger', 'hip_back'],
-            daysPerWeek: 3
-        };
-
-        let radarChartInstance = null;
-        let macroChartInstance = null;
-
-        // MULTI-PAGE ROUTER FUNCTION
-        function switchView(targetViewId) {
-            // Hide all pages
-            document.querySelectorAll('.page-view').forEach(view => {
-                view.classList.add('hidden');
-            });
-
-            // Show target page
-            const targetView = document.getElementById(targetViewId);
-            if (targetView) {
-                targetView.classList.remove('hidden');
-            }
-
-            // Update Header Nav Active Style
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            const activeNav = document.getElementById('nav-' + targetViewId);
-            if (activeNav) {
-                activeNav.classList.add('active');
-            }
-
-            // Scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            // Trigger Chart Resize if switching to chart screens
-            if (targetViewId === 'profileView' && radarChartInstance) {
-                setTimeout(() => radarChartInstance.resize(), 100);
-            }
-            if (targetViewId === 'periodizationView' && macroChartInstance) {
-                setTimeout(() => macroChartInstance.resize(), 100);
-            }
-        }
-
-        function toggleMobileMenu() {
-            document.getElementById('mobileMenu').classList.toggle('hidden');
-        }
-
-        // Initialize App
-        document.addEventListener('DOMContentLoaded', () => {
-            setupFormListeners();
-            processCustomPlan();
-            setupToolsListeners();
-        });
-
-        function setupFormListeners() {
-            document.getElementById('mobileMenuBtn').addEventListener('click', toggleMobileMenu);
-
-            document.getElementById('generateBtn').addEventListener('click', () => {
-                userProfile.gender = document.getElementById('inputGender').value;
-                userProfile.age = parseInt(document.getElementById('inputAge').value) || 25;
-                userProfile.weight = parseFloat(document.getElementById('inputWeight').value) || 70;
-                userProfile.fat = parseFloat(document.getElementById('inputFat').value) || 18;
-                userProfile.exp = document.getElementById('inputExp').value;
-                userProfile.goal = document.getElementById('inputGoal').value;
-                userProfile.daysPerWeek = parseInt(document.querySelector('input[name="daysPerWeek"]:checked').value) || 3;
-
-                const checkboxes = document.querySelectorAll('input[name="weakness"]:checked');
-                userProfile.weaknesses = Array.from(checkboxes).map(cb => cb.value);
-
-                document.getElementById('calcBW').value = userProfile.weight;
-
-                processCustomPlan();
-                switchView('profileView'); // Automatically switch to Page 2 after generating
-            });
-
-            document.querySelectorAll('.mod-filter').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.mod-filter').forEach(b => {
-                        b.classList.remove('active', 'bg-white', 'shadow-sm', 'text-slate-800');
-                        b.classList.add('text-slate-600');
-                    });
-                    e.target.classList.add('active', 'bg-white', 'shadow-sm', 'text-slate-800');
-                    e.target.classList.remove('text-slate-600');
-                    renderModules(e.target.dataset.filter);
-                });
-            });
-
-            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-            document.getElementById('closeModalBottomBtn').addEventListener('click', closeModal);
-            document.getElementById('moduleModal').addEventListener('click', (e) => {
-                if(e.target.id === 'moduleModal') closeModal();
-            });
-        }
-
-        // MAIN ANALYTICS ENGINE
-        function processCustomPlan() {
-            updateBadgesAndSummary();
-            renderRadarChart();
-            renderDynamicInsights();
-            renderModules('all');
-            renderWeeklySchedule();
-            renderMacrocycleChart();
-            calculateTargetHang();
-        }
-
-        function updateBadgesAndSummary() {
-            const badgeContainer = document.getElementById('userBadgeSummary');
-            const expLabels = {
-                'beg_1': 'มือใหม่ (< 1 ปี)',
-                'beg_2': 'มือใหม่พัฒนาการ (1-2 ปี)',
-                'int_3': 'ระดับกลาง (2-4 ปี)',
-                'adv': 'ระดับสูง (4+ ปี)'
-            };
-            const goalLabels = {
-                'both': 'Bouldering & Lead',
-                'boulder': 'Focus Bouldering',
-                'lead': 'Focus Lead Climbing'
-            };
-
-            badgeContainer.innerHTML = `
-                <span class="px-3 py-1.5 bg-sand-100 text-slate-700 rounded-lg font-medium">${userProfile.gender === 'male' ? '👨 ชาย' : '👩 หญิง'} (${userProfile.age} ปี)</span>
-                <span class="px-3 py-1.5 bg-sand-100 text-slate-700 rounded-lg font-medium">⚖️ ${userProfile.weight} kg (${userProfile.fat}% BF)</span>
-                <span class="px-3 py-1.5 bg-sand-100 text-slate-700 rounded-lg font-medium">⏱️ ${expLabels[userProfile.exp]}</span>
-                <span class="px-3 py-1.5 bg-terracotta-500/10 text-terracotta-700 rounded-lg font-bold">🎯 ${goalLabels[userProfile.goal]}</span>
-                <span class="px-3 py-1.5 bg-olive-600/10 text-olive-700 rounded-lg font-bold">📅 ${userProfile.daysPerWeek} วัน/สัปดาห์</span>
-            `;
-
-            document.getElementById('customProfileDesc').innerHTML = `
-                ระบบวิเคราะห์ประมวลผลสภาพร่างกายและข้อจำกัดที่คุณระบุ <strong>(${userProfile.weaknesses.length} จุดอ่อนหลัก)</strong> 
-                ร่วมกับเป้าหมายการปีนแบบ <strong>${goalLabels[userProfile.goal]}</strong> 
-                โดยออกแบบแผนการซ้อมที่มีมอดูลเฉพาะจุดเน้นพิเศษ เพื่อแก้ไขโครงสร้างสรีรวิทยา ป้องกันการบาดเจ็บสะสม และดึงศักยภาพการเคลื่อนไหวออกมาสูงสุด
-            `;
-        }
-
-        function renderRadarChart() {
-            const ctx = document.getElementById('radarChart').getContext('2d');
-
-            let currentFinger = userProfile.weaknesses.includes('finger') ? 45 : 70;
-            let currentHip = userProfile.weaknesses.includes('hip_back') ? 35 : 75;
-            let currentEndurance = userProfile.weaknesses.includes('endurance') ? 40 : 70;
-            let currentTech = userProfile.weaknesses.includes('footwork') ? 45 : 75;
-            let currentCore = userProfile.weaknesses.includes('core_push') ? 40 : 70;
-            let currentSafety = (userProfile.weaknesses.includes('high_weight') || userProfile.exp.startsWith('beg')) ? 50 : 80;
-
-            if(userProfile.weight > 80 && userProfile.weaknesses.includes('finger')) currentFinger -= 10;
-
-            if (radarChartInstance) {
-                radarChartInstance.destroy();
-            }
-
-            radarChartInstance = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: [
-                        'แรงนิ้วมือ (Finger Strength)',
-                        'ความยืดหยุ่นสะโพก/หลัง (Mobility)',
-                        'ความทนทาน (Endurance)',
-                        'ทักษะจัดระเบียบร่างกาย (Technique)',
-                        'สมดุลดัน & แกนกลาง (Core/Push)',
-                        'ความปลอดภัยข้อต่อ (Pulley Safety)'
-                    ],
-                    datasets: [{
-                        label: 'ประเมินปัจจุบัน',
-                        data: [currentFinger, currentHip, currentEndurance, currentTech, currentCore, currentSafety],
-                        backgroundColor: 'rgba(217, 107, 67, 0.25)',
-                        borderColor: '#d96b43',
-                        pointBackgroundColor: '#d96b43',
-                        borderWidth: 2
-                    }, {
-                        label: 'เป้าหมายหลัง 12 สัปดาห์',
-                        data: [80, 80, 80, 85, 80, 85],
-                        backgroundColor: 'rgba(101, 116, 59, 0.15)',
-                        borderColor: '#65743b',
-                        pointBackgroundColor: '#65743b',
-                        borderWidth: 2,
-                        borderDash: [4, 4]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: { color: '#efe6d5' },
-                            grid: { color: '#efe6d5' },
-                            pointLabels: {
-                                font: { family: 'Sarabun', size: 10 },
-                                color: '#334155'
-                            },
-                            ticks: { display: false, max: 100 }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: { font: { family: 'Sarabun', size: 11 }, boxWidth: 10 }
-                        }
-                    }
-                }
-            });
-        }
-
-        function renderDynamicInsights() {
-            const container = document.getElementById('dynamicInsightsContainer');
-            container.innerHTML = '';
-
-            const insights = [];
-
-            if (userProfile.weaknesses.includes('finger') || userProfile.exp.startsWith('beg')) {
-                insights.push({
-                    type: 'amber',
-                    icon: '⚠️',
-                    title: 'กลยุทธ์ป้องกันเอ็นข้อต่อ A2/A4 (Pulley Protection)',
-                    desc: `ด้วยประสบการณ์ ${userProfile.exp.startsWith('beg') ? 'น้อยกว่า 2 ปี' : 'ระดับกำลังพัฒนา'} เอ็นและปลอกรัดข้อต่อนิ้วมือยังไม่หนาแน่นพอ <strong>ห้ามโหน Max Hangs หนักเกินไป หรือใช้ Campus Board</strong> ต้องฝึกแบบ Submaximal (RPE 7-8) บนขอบ 20mm เท่านั้น`
-                });
-            }
-
-            if (userProfile.weaknesses.includes('hip_back')) {
-                insights.push({
-                    type: 'blue',
-                    icon: '📐',
-                    title: 'ชีวกลศาสตร์สะโพก & หลังส่วนล่าง (Hip-Back Mechanics)',
-                    desc: 'การที่สะโพกและหลังแข็ง ทำให้จุดศูนย์ถ่วง (Center of Gravity) เด้งออกห่างจากผนัง ส่งผลให้แรงดึงตกกระทบมาที่นิ้วมือเพิ่มขึ้น 30-40% การเปิดมุมสะโพกจะผ่อนแรงนิ้วได้ทันที'
-                });
-            }
-
-            if (userProfile.weaknesses.includes('endurance') || userProfile.goal === 'lead' || userProfile.goal === 'both') {
-                insights.push({
-                    type: 'emerald',
-                    icon: '🫁',
-                    title: 'การจัดการกรดแลกติก & Micro-Shakes',
-                    desc: 'การล้าของท่อนแขนเกิดจากการขาดออกซิเจนชั่วคราวขณะเกร็ง ต้องฝึกจังหวะสลัดมือสั้นๆ (Micro-Shakes 3-5 วินาที) บน Rest Positions เพื่อเร่งการขับแลกติก'
-                });
-            }
-
-            if (userProfile.weaknesses.includes('footwork')) {
-                insights.push({
-                    type: 'amber',
-                    icon: '🦶',
-                    title: 'การถ่ายน้ำหนักลงเท้า & Quiet Feet',
-                    desc: 'การวางเท้าเสียงดังบ่งบอกถึงการโหนตัวด้วยแขนมากเกินไป ต้องเสริมแบบฝึกหัด Hover Hands และ Quiet Feet เพื่อบังคับให้สายตาจ้องมองปุ่มเท้าจนกว่าจะเหยียบสนิท'
-                });
-            }
-
-            if (userProfile.weaknesses.includes('high_weight') || userProfile.weight > 78) {
-                insights.push({
-                    type: 'blue',
-                    icon: '⚖️',
-                    title: 'การจัดการแรงตกกระทบจากน้ำหนักตัว (Bodyweight Ratio)',
-                    desc: `น้ำหนักตัว ${userProfile.weight} kg เพิ่มแรงบิดที่เอ็นนิ้วมือเมื่อปีนมุมชัน ระบบจึงคำนวณการผ่อนแรง/ยันเท้าช่วยในการฝึก Hangboard เพื่อให้คอลลาเจนได้รับการกระตุ้นโดยไม่ฉีกขาด`
-                });
-            }
-
-            insights.forEach(item => {
-                const colorMap = {
-                    amber: 'bg-amber-50 border-amber-200 text-amber-900 text-amber-800',
-                    blue: 'bg-blue-50 border-blue-200 text-blue-900 text-blue-800',
-                    emerald: 'bg-emerald-50 border-emerald-200 text-emerald-900 text-emerald-800'
-                };
-
-                const card = document.createElement('div');
-                card.className = `p-4 rounded-xl border ${colorMap[item.type].split(' ')[1]} ${colorMap[item.type].split(' ')[0]}`;
-                card.innerHTML = `
-                    <div class="flex items-start space-x-3">
-                        <span class="text-xl">${item.icon}</span>
-                        <div>
-                            <h4 class="font-heading font-semibold ${colorMap[item.type].split(' ')[2]} text-sm md:text-base">${item.title}</h4>
-                            <p class="text-xs md:text-sm ${colorMap[item.type].split(' ')[3]} mt-1">${item.desc}</p>
-                        </div>
+                <!-- Calculator Input -->
+                <div class="bg-sand-50 p-4 rounded-xl border border-sand-200 space-y-3 text-xs">
+                    <div class="flex items-center justify-between">
+                        <label class="font-semibold text-slate-700">น้ำหนักตัวของคุณ (kg):</label>
+                        <input type="number" id="calcBW" value="70" onchange="calculateHangLoad()" class="w-20 px-2 py-1 bg-white border border-sand-300 rounded text-center font-bold text-slate-800">
                     </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function renderModules(filter) {
-            const grid = document.getElementById('modulesGrid');
-            grid.innerHTML = '';
-
-            const filtered = filter === 'all' 
-                ? modulesLibrary 
-                : modulesLibrary.filter(m => m.category === filter);
-
-            filtered.forEach(mod => {
-                let isHighPriority = false;
-                let priorityReason = '';
-
-                if (mod.id === 'modB' && userProfile.weaknesses.includes('finger')) {
-                    isHighPriority = true;
-                    priorityReason = 'ตรงจุดอ่อน: พัฒนาแรงจับนิ้วมือ';
-                } else if (mod.id === 'modE' && userProfile.weaknesses.includes('hip_back')) {
-                    isHighPriority = true;
-                    priorityReason = 'ตรงจุดอ่อน: คลายสะโพกและหลังแข็ง';
-                } else if (mod.id === 'modD' && (userProfile.weaknesses.includes('endurance') || userProfile.goal === 'lead')) {
-                    isHighPriority = true;
-                    priorityReason = 'ตรงจุดอ่อน: พัฒนาความทนทาน';
-                } else if (mod.id === 'modC' && userProfile.weaknesses.includes('footwork')) {
-                    isHighPriority = true;
-                    priorityReason = 'ตรงจุดอ่อน: ฝึกทักษะจัดระเบียบร่างกาย';
-                } else if (mod.id === 'modF' && userProfile.weaknesses.includes('core_push')) {
-                    isHighPriority = true;
-                    priorityReason = 'ตรงจุดอ่อน: ปรับสมดุลกล้ามเนื้อดัน/แกนกลาง';
-                }
-
-                const card = document.createElement('div');
-                card.className = `bg-white rounded-xl p-5 border ${isHighPriority ? 'border-terracotta-500 shadow-md ring-1 ring-terracotta-500/30' : 'border-sand-200 shadow-sm'} hover:shadow-md transition-shadow flex flex-col justify-between space-y-4 relative overflow-hidden`;
-                
-                card.innerHTML = `
-                    ${isHighPriority ? `<div class="absolute top-0 right-0 bg-terracotta-500 text-white text-[10px] font-bold px-3 py-0.5 rounded-bl-lg">เน้นเป็นพิเศษ (HIGH PRIORITY)</div>` : ''}
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between">
-                            <span class="px-2.5 py-1 bg-sand-100 text-terracotta-600 font-bold text-xs rounded-lg">${mod.code}</span>
-                            <span class="text-xs text-slate-500 font-medium">⏱️ ${mod.duration}</span>
-                        </div>
-                        <h3 class="font-heading font-bold text-lg text-slatecustom-800 leading-snug">${mod.title}</h3>
-                        ${isHighPriority ? `<p class="text-xs font-semibold text-terracotta-600 bg-terracotta-500/10 p-1.5 rounded-md">🎯 ${priorityReason}</p>` : ''}
-                        <p class="text-xs text-slate-600 line-clamp-2">${mod.physio}</p>
+                    <div class="flex items-center justify-between">
+                        <label class="font-semibold text-slate-700">ระดับความหนัก (Target Load):</label>
+                        <select id="calcRpe" onchange="calculateHangLoad()" class="px-2 py-1 bg-white border border-sand-300 rounded text-slate-800 font-medium">
+                            <option value="0.75">RPE 7 (ปลอดภัย - สำหรับเริ่มต้น)</option>
+                            <option value="0.80" selected>RPE 8 (แนะนำ - Submaximal Target)</option>
+                            <option value="0.85">RPE 8.5 (สำหรับประสบการณ์ > 2 ปี)</option>
+                        </select>
                     </div>
-                    <div class="pt-3 border-t border-sand-100 flex items-center justify-between">
-                        <span class="text-[11px] text-slate-500 truncate max-w-[180px]">🛠️ ${mod.equip}</span>
-                        <button onclick="openModuleModal('${mod.id}')" class="px-3 py-1.5 bg-terracotta-500/10 hover:bg-terracotta-500 text-terracotta-600 hover:text-white rounded-lg text-xs font-semibold transition-colors">
-                            รายละเอียด ➔
+                    <div class="p-3 bg-terracotta-500/10 rounded-lg text-terracotta-700 font-medium flex justify-between items-center">
+                        <span>ประมาณการน้ำหนักที่นิ้วต้องรับ:</span>
+                        <span id="targetHangWeight" class="text-base font-bold">56.0 kg (ช่วยยันเท้า ~14 kg)</span>
+                    </div>
+                </div>
+
+                <!-- Timer Options -->
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">เวลาพักระหว่างเซต:</label>
+                        <select id="hangRestSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
+                            <option value="60">พัก 1 นาที (60s)</option>
+                            <option value="120" selected>พัก 2 นาที (120s - แนะนำ)</option>
+                            <option value="180">พัก 3 นาที (180s - ฟื้นตัว 100%)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">จำนวนเซตทั้งหมด:</label>
+                        <select id="hangSetsSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
+                            <option value="4">4 เซต</option>
+                            <option value="6" selected>6 เซต</option>
+                            <option value="8">8 เซต</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Hangboard Work/Rest Display Panel -->
+                <div class="text-center p-6 bg-slatecustom-800 rounded-xl text-white space-y-4 shadow-inner">
+                    <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slatecustom-700 pb-2">
+                        <span id="hangSetDisplay" class="font-bold text-amber-400">เซตที่ 1 / 6</span>
+                        <span id="hangPhaseBadge" class="px-2.5 py-0.5 rounded bg-terracotta-500 text-white font-semibold">เฟสโหนนิ้ว (WORK)</span>
+                    </div>
+                    
+                    <div id="hangStatus" class="text-sm font-medium tracking-wide uppercase text-amber-400">พร้อมเริ่มต้น (โหนค้าง 10s)</div>
+                    <div id="hangTimerDisplay" class="font-heading text-6xl font-extrabold tracking-tight font-mono text-white">00:10</div>
+                    
+                    <div class="flex justify-center space-x-3 text-xs font-semibold pt-2">
+                        <button id="startHangBtn" onclick="toggleHangTimer()" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 rounded-lg text-white shadow-md transition-transform active:scale-95 flex items-center gap-1.5">
+                            <i class="fa-solid fa-play"></i> เริ่มต้น
+                        </button>
+                        <button id="resetHangBtn" onclick="resetHangTimer()" class="px-4 py-2.5 bg-slatecustom-700 hover:bg-slatecustom-600 rounded-lg text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-left"></i> รีเซ็ต
                         </button>
                     </div>
-                `;
-                grid.appendChild(card);
-            });
+                    <p class="text-[11px] text-slate-400"><i class="fa-solid fa-volume-high text-amber-400 mr-1"></i>มีเสียงเตือน countdown 3 วินาทีสุดท้าย และเสียงแจ้งเตือนจบเซต</p>
+                </div>
+            </div>
+
+            <!-- Tool 2: PNF Mobility Timer -->
+            <div class="lg:col-span-6 bg-white rounded-2xl p-6 border border-sand-200 shadow-sm space-y-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-olive-600/10 text-olive-700 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-person-stretching mr-1"></i> เครื่องมือ Module E
+                        </span>
+                        <h3 class="font-heading font-bold text-xl text-slatecustom-800">PNF Hip Mobility Stretch Timer</h3>
+                        <p class="text-xs text-slate-500 mt-1">กระตุ้น Autogenic Inhibition ช่วยขยายช่วงการยืดสะโพกอย่างปลอดภัย</p>
+                    </div>
+                </div>
+
+                <!-- PNF Protocol Breakdown -->
+                <div class="space-y-2 text-xs">
+                    <div class="p-2.5 bg-sand-50 rounded-lg border border-sand-200 flex justify-between items-center">
+                        <span class="font-bold text-slate-700">1. Setup Phase:</span>
+                        <span class="text-slate-600">จัดท่า Frog Stretch จนรู้สึกตึงเบาๆ</span>
+                    </div>
+                    <div class="p-2.5 bg-amber-50 rounded-lg border border-amber-200 flex justify-between items-center">
+                        <span class="font-bold text-amber-800">2. Contract Phase (7 วินาที):</span>
+                        <span class="text-amber-800">กดเข่าลงพื้นออกแรงเกร็งต้าน 70% Force</span>
+                    </div>
+                    <div class="p-2.5 bg-emerald-50 rounded-lg border border-emerald-200 flex justify-between items-center">
+                        <span class="font-bold text-emerald-800">3. Relax & Deepen (30 วินาที):</span>
+                        <span class="text-emerald-800">ผ่อนคลายความเกร็ง หายใจออก ทิ้งสะโพกลึกลง</span>
+                    </div>
+                </div>
+
+                <!-- PNF Timer Display Panel -->
+                <div class="text-center p-6 bg-slatecustom-800 rounded-xl text-white space-y-4 shadow-inner">
+                    <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slatecustom-700 pb-2">
+                        <span id="pnfSetDisplay" class="font-bold text-emerald-400">รอบที่ 1 / 3</span>
+                        <span id="pnfPhaseBadge" class="px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold">เฟสเกร็งต้าน (CONTRACT)</span>
+                    </div>
+
+                    <div id="pnfStatus" class="text-sm font-medium tracking-wide uppercase text-emerald-400">เตรียมพร้อมจัดท่า Frog Stretch</div>
+                    <div id="pnfTimerDisplay" class="font-heading text-6xl font-extrabold tracking-tight font-mono text-white">00:07</div>
+                    
+                    <div class="flex justify-center space-x-3 text-xs font-semibold pt-2">
+                        <button id="startPnfBtn" onclick="togglePNFTimer()" class="px-5 py-2.5 bg-olive-600 hover:bg-olive-700 rounded-lg text-white shadow-md transition-transform active:scale-95 flex items-center gap-1.5">
+                            <i class="fa-solid fa-play"></i> เริ่มต้น PNF
+                        </button>
+                        <button id="resetPnfBtn" onclick="resetPNFTimer()" class="px-4 py-2.5 bg-slatecustom-700 hover:bg-slatecustom-600 rounded-lg text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-left"></i> รีเซ็ต
+                        </button>
+                    </div>
+                    <p class="text-[11px] text-slate-400"><i class="fa-solid fa-volume-high text-olive-500 mr-1"></i>ส่งเสียงเตือนอัตโนมัติเมื่อครบเวลาเกร็งต้านและยืด</p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Page Navigation Controls -->
+        <div class="bg-white rounded-2xl p-4 border border-sand-200 flex justify-between items-center">
+            <button onclick="switchView('periodizationView')" class="px-4 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-left"></i> ย้อนกลับ: แผน 12 สัปดาห์
+            </button>
+            <button onclick="switchView('assessmentView')" class="px-5 py-2.5 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl text-xs font-bold shadow-sm flex items-center gap-1.5">
+                <i class="fa-solid fa-arrows-rotate"></i> กลับไปยังแบบประเมินตั้งต้น
+            </button>
+        </div>
+    </section>
+
+</main>
+
+<!-- Modal for Module Details -->
+<div id="moduleModal" class="fixed inset-0 bg-slatecustom-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 md:p-8 space-y-6 shadow-2xl border border-sand-200 max-h-[90vh] overflow-y-auto custom-scrollbar relative">
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 text-xl font-bold w-8 h-8 flex items-center justify-center rounded-full bg-sand-100 hover:bg-sand-200">
+            ✕
+        </button>
+        <div class="flex items-start justify-between border-b border-sand-200 pb-4">
+            <div class="flex items-center space-x-3">
+                <span id="modalCode" class="px-3 py-1 bg-terracotta-500 text-white font-bold rounded-lg text-sm">Module A</span>
+                <div>
+                    <h3 id="modalTitle" class="font-heading font-bold text-xl text-slatecustom-800">Warm-Up & Dynamic Activation</h3>
+                    <p id="modalDuration" class="text-xs text-slate-500">ระยะเวลา: 15–20 นาที</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-4 text-xs md:text-sm text-slate-600">
+            <div>
+                <h4 class="font-heading font-bold text-slatecustom-800 text-sm mb-1 text-terracotta-600"><i class="fa-solid fa-atom mr-1"></i> วัตถุประสงค์ทางสรีรวิทยา:</h4>
+                <p id="modalPhysio" class="bg-sand-50 p-3 rounded-lg border border-sand-200 text-slate-700"></p>
+            </div>
+
+            <div>
+                <h4 class="font-heading font-bold text-slatecustom-800 text-sm mb-1 text-terracotta-600"><i class="fa-solid fa-toolbox mr-1"></i> อุปกรณ์ที่จำเป็น:</h4>
+                <p id="modalEquip" class="font-medium text-slate-800 bg-sand-50 p-2.5 rounded-lg border border-sand-200"></p>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <h4 class="font-heading font-bold text-slatecustom-800 text-sm text-terracotta-600"><i class="fa-solid fa-list-check mr-1"></i> ขั้นตอนปฏิบัติและ Checkbox บันทึกความคืบหน้า:</h4>
+                    <span id="modalStepProgress" class="text-xs font-bold text-terracotta-600 bg-terracotta-50 px-2 py-0.5 rounded">0/0 สำเร็จ</span>
+                </div>
+                <ul id="modalSteps" class="space-y-2"></ul>
+            </div>
+
+            <div id="modalCautionBox" class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-900 text-xs space-y-1">
+                <strong class="font-bold flex items-center gap-1 text-red-700"><i class="fa-solid fa-triangle-exclamation"></i> ข้อควรระวังสำคัญ:</strong>
+                <p id="modalCaution"></p>
+            </div>
+        </div>
+
+        <div class="text-right border-t border-sand-200 pt-4">
+            <button onclick="closeModal()" class="px-5 py-2 bg-sand-200 hover:bg-sand-300 text-slate-800 rounded-xl font-medium text-xs">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-slatecustom-900 text-slate-400 py-8 border-t border-slatecustom-800 text-xs mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div>
+            <p class="font-heading font-semibold text-slate-200">ClimbFit Dynamic Pro System &copy; 2026</p>
+            <p class="mt-1 text-slate-500">ประมวลผลตามหลักชีวกลศาสตร์ วิทยาศาสตร์การกีฬา และสรีรวิทยาการออกกำลังกาย</p>
+        </div>
+        <p class="text-slate-500 text-center md:text-right">
+            ออกแบบสำหรับการพัฒนาความแข็งแรงอย่างปลอดภัยและเป็นระบบ
+        </p>
+    </div>
+</footer>
+
+<!-- JavaScript Application Logic -->
+<script>
+    // Audio Context Synthesizer Handler
+    let audioCtx = null;
+
+    function initAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
 
-        function renderWeeklySchedule() {
-            const tabsContainer = document.getElementById('weeklyTabs');
-            tabsContainer.innerHTML = '';
+    function playBeepSound(type = 'short') {
+        try {
+            initAudioContext();
+            if (!audioCtx) return;
 
-            let daysConfig = [];
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
 
-            if (userProfile.daysPerWeek === 3) {
-                daysConfig = [
-                    { id: 'day1', label: 'จันทร์: Boulder & Finger Focus', modules: ['Module A', 'Module B', 'Module C', 'Module F'], focus: 'กำลังสูงสุด & ฝึกนิ้วมือ', desc: 'วอร์มอัพ ➔ Submaximal Hangs ➔ Bouldering / Skill Drills ➔ Antagonist & Core', note: 'วันหลักในการสร้างกำลังและความแข็งแรงนิ้วมือ' },
-                    { id: 'day2', label: 'อังคาร: Active Recovery & Mobility', modules: ['Module E'], focus: 'ยืดสะโพกและหลังเชิงลึก', desc: 'ยืดเหยียดสะโพก 90/90, Cossack Squat และ Frog Stretch PNF ที่บ้าน 30 นาที', note: 'พักการปีนเพื่อให้คอลลาเจนสังเคราะห์ซ่อมแซม' },
-                    { id: 'day3', label: 'พุธ: Endurance & Lead / Skill', modules: ['Module A', 'Module D', 'Module F'], focus: 'ความทนทาน & Pacing', desc: 'วอร์มอัพ ➔ 4x4s หรือ Double Route Laps ➔ Antagonist Conditioning', note: 'เน้นการพักสลัดมือ Micro-Shakes บนผนัง' },
-                    { id: 'day4', label: 'พฤหัสบดี: Full Rest Day', modules: ['Full Rest'], focus: 'พักฟื้นระบบประสาท', desc: 'พักผ่อนสมบูรณ์ นอนหลับ 7-8 ชม.', note: 'ปล่อยให้เอ็นยึดข้อฟื้นตัวเต็มที่' },
-                    { id: 'day5', label: 'ศุกร์: Technique & Volume Session', modules: ['Module A', 'Module C (Tech)', 'Module E'], focus: 'ทักษะจัดระเบียบร่างกาย', desc: 'วอร์มอัพ ➔ Bouldering เน้น Quiet Feet & Hips-to-Wall ➔ Hip/Back Mobility', note: 'ปีนโจทย์ระดับกลาง Focus ที่ฟอร์มการปีนไร้เสียง' },
-                    { id: 'day6', label: 'เสาร์: Full Rest / Outdoor', modules: ['Full Rest / Easy Climb'], focus: 'พักผ่อนผ่อนคลาย', desc: 'พักผ่อน หรือ ปีนผาธรรมชาติระดับผ่อนคลาย', note: 'ประเมินความล้าของนิ้วมือเป็นหลัก' },
-                    { id: 'day7', label: 'อาทิตย์: Mobility Session', modules: ['Module E'], focus: 'ยืดฟื้นฟูสะโพก/หลัง', desc: 'ทำ PNF Mobility Session เตรียมพร้อมสัปดาห์ถัดไป', note: 'ผ่อนคลายความตึงสะสม' }
-                ];
-            } else if (userProfile.daysPerWeek === 4) {
-                daysConfig = [
-                    { id: 'day1', label: 'จันทร์: Limit Boulder & Finger Strength', modules: ['Module A', 'Module B', 'Module C'], focus: 'กำลังสูงสุด & นิ้วมือ', desc: 'วอร์มอัพ ➔ Submaximal Hangs 20mm ➔ Limit Bouldering (3-4 โจทย์)', note: 'เน้นระบบพลังงาน ATP-CP' },
-                    { id: 'day2', label: 'อังคาร: Lead & Power Endurance', modules: ['Module A', 'Module D', 'Module F'], focus: 'ความทนทานกรดแลกติก', desc: 'วอร์มอัพ ➔ 4x4s Protocol / Double Laps ➔ Antagonist Core Work', note: 'ห้ามปีน Limit ในวันนี้' },
-                    { id: 'day3', label: 'พุธ: Full Rest Day', modules: ['Full Rest Day'], focus: 'พักฟื้นระบบประสาท', desc: 'นอนหลับ ดื่มน้ำ ทานโปรตีนเพียงพอ', note: 'สำคัญมากหลังการซ้อมหนัก 2 วันติด' },
-                    { id: 'day4', label: 'พฤหัสบดี: Mobility & Active Stretch', modules: ['Module E'], focus: 'เปิดมุมสะโพกและหลัง', desc: '90/90 Rotations, Cossack Squats, Frog PNF Stretch', note: 'ช่วยคลายความตึงสะสมท่อนล่าง' },
-                    { id: 'day5', label: 'ศุกร์: Technique & Finger Tissue Adapt', modules: ['Module A', 'Module B', 'Module C (Tech)'], focus: 'ทักษะ & ความทนเอ็น', desc: 'วอร์มอัพ ➔ Submaximal Hangs ➔ Technique Volume Bouldering', note: 'ฝึกจัดระเบียบสะโพกชิดผนัง' },
-                    { id: 'day6', label: 'เสาร์: Outdoor / Volume Lead', modules: ['Module A', 'Module D / Outdoor'], focus: 'ปีนจริงบนผนัง/หน้าผา', desc: 'ปีน Onsight หรือ Volume Route ระดับปานกลาง', note: 'เน้นความสนุกและการใช้ทักษะจริง' },
-                    { id: 'day7', label: 'อาทิตย์: Full Rest / Mobility', modules: ['Full Rest & Module E'], focus: 'ฟื้นฟูเตรียมสัปดาห์ใหม่', desc: 'ยืดเหยียดเบาๆ และพักผ่อนเต็มที่', note: 'เตรียมพร้อมสำหรับ Macrocycle Block' }
-                ];
+            const now = audioCtx.currentTime;
+
+            if (type === 'countdown') {
+                // Short low-pitch beep for 3, 2, 1
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(520, now);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'high' || type === 'phase') {
+                // Double high pitch beep for phase change
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.setValueAtTime(1200, now + 0.1);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'complete') {
+                // Fanfare tone for completion
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.12); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.24); // G5
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
             } else {
-                daysConfig = [
-                    { id: 'day1', label: 'จันทร์: Bouldering & Finger Strength', modules: ['Module A', 'Module B', 'Module C'], focus: 'กำลังสูงสุด & นิ้วมือ', desc: 'วอร์มอัพ ➔ Submaximal Hangs ➔ Bouldering Power Focus', note: 'ฝึกขณะระบบประสาทสดใหม่' },
-                    { id: 'day2', label: 'อังคาร: Lead Endurance & Antagonist', modules: ['Module A', 'Module D', 'Module F'], focus: 'ความทนทาน & สมดุล', desc: 'วอร์มอัพ ➔ Lead Route Laps ➔ Pushing & Wrist Extensors', note: 'เน้นการหายใจและ Pacing' },
-                    { id: 'day3', label: 'พุธ: Dedicated Mobility Day', modules: ['Module E'], focus: 'ยืดสะโพก/หลังเชิงลึก', desc: 'ยืด PNF 30 นาที คลายข้อต่อสะโพกและหลังส่วนล่าง', note: 'พักการปีนเพื่อลดภาระนิ้ว' },
-                    { id: 'day4', label: 'พฤหัสบดี: Bouldering Skill & Hover Drills', modules: ['Module A', 'Module C (Tech)'], focus: 'การถ่ายน้ำหนัก & Footwork', desc: 'วอร์มอัพ ➔ Hover Hands Drills ➔ Silent Feet Drills', note: 'ห้ามใช้กำลังหักโหม เน้นความเป๊ะ' },
-                    { id: 'day5', label: 'ศุกร์: Lead Power Endurance', modules: ['Module A', 'Module D', 'Module F'], focus: 'ความทนทานเฉพาะทาง', desc: 'วอร์มอัพ ➔ 4x4s Bouldering Intervals ➔ Core Conditioning', note: 'บริหารกรดแลกติก' },
-                    { id: 'day6', label: 'เสาร์: Outdoor or Easy Climbing', modules: ['Active Recovery Climb', 'Module E'], focus: 'ผ่อนคลาย & Mobility', desc: 'ปีนผาเบาๆ หรือยืดเหยียดร่างกาย', note: 'ห้ามลองโจทย์ขีดจำกัด' },
-                    { id: 'day7', label: 'อาทิตย์: Full Rest Day', modules: ['Full Rest'], focus: 'พักผ่อนสมบูรณ์', desc: 'พักผ่อนเต็มที่ 100%', note: 'เพื่อการสังเคราะห์คอลลาเจนเอ็นข้อต่อ' }
-                ];
+                // Default beep
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(750, now);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc.start(now);
+                osc.stop(now + 0.2);
             }
+        } catch (e) {
+            console.log("Audio alert playback error:", e);
+        }
+    }
 
-            daysConfig.forEach((day, index) => {
-                const btn = document.createElement('button');
-                btn.className = `day-tab px-4 py-2.5 font-heading font-medium text-sm whitespace-nowrap border-b-2 ${index === 0 ? 'active border-terracotta-500 text-terracotta-600 font-bold' : 'border-transparent text-slate-500 hover:text-slate-800'}`;
-                btn.dataset.dayId = day.id;
-                btn.innerText = day.label.split(':')[0];
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.day-tab').forEach(t => {
-                        t.classList.remove('active', 'border-terracotta-500', 'text-terracotta-600', 'font-bold');
-                        t.classList.add('border-transparent', 'text-slate-500');
-                    });
-                    btn.classList.add('active', 'border-terracotta-500', 'text-terracotta-600', 'font-bold');
-                    btn.classList.remove('border-transparent', 'text-slate-500');
-                    showDayDetail(day);
-                });
-                tabsContainer.appendChild(btn);
-            });
+    // Master Modules Base Library
+    const modulesLibrary = [
+        {
+            id: 'modA',
+            code: 'Module A',
+            title: 'การวอร์มอัพและการกระตุ้นการเคลื่อนไหว (Warm-Up & Dynamic Activation)',
+            category: 'prep',
+            categoryLabel: 'การเตรียมร่างกาย',
+            duration: '25–35 นาที',
+            equip: 'ยางยืด Resistance Band, บาร์โหน, ผนังปีนจริง',
+            physio: 'เตรียมระบบประสาท อุณหภูมิร่างกาย และเพิ่มน้ำไขข้อตามข้อต่อ',
+            steps: [
+                'Light Aerobic Exercise: ออกกำลังกายแบบแอโรบิกเบาๆ เพื่อเพิ่มอุณหภูมิในกล้ามเนื้อและกระตุ้นการไหลเวียนของเลือด (ระยะเวลา: 5 นาที)',
+                'Dynamic Joint Mobilization (Hip CARs & Rotations): หมุนขยับข้อต่อสะโพก (Hip CARs) ข้อเท้า ไหล่ และข้อมือแบบพละวัต เพื่อกระตุ้นน้ำไขข้อ (3–5 นาที / 8–10 รอบ)',
+                'Specific Muscle Activation: บริหารสะบักและ Rotator Cuff ด้วยยางยืด (Shoulder External Rotation, Band Pull-Aparts) และการโหนบาร์ (Scapular Pull-ups) (2–3 เซต x 8–12 ครั้ง)',
+                'On-Wall Progression (Quiet Feet & Hips-to-Wall): ปีนบนผนังจริงในเส้นทางที่ง่ายกว่าระดับขีดจำกัด 3–4 เกรด เน้นวางเท้าเงียบสงบและบิดสะโพกเข้าหาผนัง (10–15 นาที)'
+            ],
+            caution: 'ห้ามยืดเหยียดแบบ Static Stretch ค้างไว้นานในช่วงวอร์มอัพ เพราะจะลดประสิทธิภาพแรงหดตัวสูงสุดของกล้ามเนื้อ'
+        },
+        {
+            id: 'modB',
+            code: 'Module B',
+            title: 'การเสริมสร้างความแข็งแรงของนิ้วมือและเนื้อเยื่อเกี่ยวพัน (Finger Strength & Tissue Adaptation)',
+            category: 'strength',
+            categoryLabel: 'ความแข็งแรงนิ้ว',
+            duration: '20–30 นาที',
+            equip: 'Hangboard ขอบจับมาตรฐาน 20mm, เครื่องชั่งน้ำหนัก / ยางยืดช่วยพยุง',
+            physio: 'เพิ่มความหนาแน่นคอลลาเจนและแรงดึงนิ้วแบบ Submaximal',
+            steps: [
+                'Submaximal Recruitment Hangs / Density Hangs: โหนค้างบนขอบจับมาตรฐานขนาด 20 มิลลิเมตร (หรือวางเท้ายันพื้นช่วยปรับแรง) ความหนักระดับ RPE 7–8/10',
+                'สลับรูปแบบการจับระหว่าง Half Crimp (งอนิ้ว 90 องศาไม่ล็อคโป้ง) และ Open Drag (3 นิ้วลาก)',
+                'จำนวนครั้ง/เซ็ต/ระยะเวลา: โหนค้าง 10 วินาที/รอบ, พักระหว่างรอบ 2–3 นาที, ปฏิบัติ 3–4 รอบต่อรูปแบบการจับ (รวมทั้งหมด 6–8 รอบต่อเซสชัน)'
+            ],
+            caution: 'งดการใช้ท่า Full Crimp (ล็อคนิ้วโป้ง) เพื่อป้องกันการบาดเจ็บของเอ็นยึดข้อต่อ A2/A4'
+        },
+        {
+            id: 'modC',
+            code: 'Module C',
+            title: 'การฝึกโบลเดอริ่งและทักษะกำลัง-เทคนิค (Bouldering & Power-Technical Skill)',
+            category: 'climb',
+            categoryLabel: 'ทักษะการปีน',
+            duration: '60–90 นาที',
+            equip: 'ผนัง Bouldering',
+            physio: 'เน้นกำลังสูงสุดและระบบประสาท หรือเน้นความเชี่ยวชาญในรูปแบบการเคลื่อนไหว',
+            steps: [
+                'รูปแบบที่ 1: Limit Bouldering Projects - เลือกโจทย์ Bouldering ความยากระดับขีดจำกัดสูงสุดที่ต้องลอง 3–5 ครั้งจึงจะผ่าน (เลือก 3–4 ปัญหา/เซสชัน, พักระหว่างลอง 3–5 นาที)',
+                'รูปแบบที่ 2: Hover Hands Drill - ปีนโจทย์ต่ำกว่าระดับสูงสุด 1–2 เกรด โดยยื่นมือไปค้างเหนือโฮลด์เป้าหมาย 2 วินาทีก่อนจะจับ เพื่อฝึกการเกร็งแกนกลางและสะโพก (6–8 ปัญหา)',
+                'รูปแบบที่ 3: Hips-to-Wall Drill - บังคับบิดสะโพกให้แนบชิดผนังก่อนทำการก้าวเท้าในทุกๆ เคลื่อนไหว (6–8 ปัญหา)'
+            ],
+            caution: 'หากระบบประสาทเริ่มล้าหรือแรงจับตกอย่างเห็นได้ชัด ให้หยุดเซสชันทันทีเพื่อป้องกันการจดจำทักษะการเคลื่อนไหวที่ผิดพลาด'
+        },
+        {
+            id: 'modD',
+            code: 'Module D',
+            title: 'การฝึกการปีนแบบมีเชือกและความทนทานเชิงกำลัง (Lead & Power Endurance)',
+            category: 'climb',
+            categoryLabel: 'ทักษะการปีน',
+            duration: '45–75 นาที',
+            equip: 'ผนัง Bouldering หรือ ผนัง Lead Climbing',
+            physio: 'ฝึกความทนทานเชิงกำลัง การจัดการกรดแลกติก และการสลัดแขนพักบนผนัง',
+            steps: [
+                'รูปแบบที่ 1: 4x4s Protocol - เลือกปัญหา Bouldering 4 ปัญหาความยาก 70–80% ของระดับสูงสุด แล้วปีนต่อเนื่องตั้งแต่ปัญหาที่ 1 ถึง 4 โดยไม่หยุดพัก (ปีน 4 ปัญหา = 1 เซต, พัก 5 นาที, ทำ 4 เซต)',
+                'รูปแบบที่ 2: Double Route Laps with Micro-Shakes - ปีนเส้นทางเชือกความยากใกล้เคียง Onsight Max เมื่อถึงจุดโรยตัวให้ลงอย่างรวดเร็ว แล้วปีนซ้ำทันทีโดยไม่พัก',
+                'สลัดแขนสั้นๆ 3–5 วินาที ณ จุดจับที่มั่นคง (Micro-Shakes) ระหว่างปีน (ปีนซ้ำ 2 รอบ = 1 เซต, พัก 10 นาที, ทำ 4–5 เซต)'
+            ],
+            caution: 'คุมจังหวะการหายใจให้สม่ำเสมอและหลีกเลี่ยงการเกร็งจับโฮลด์แน่นเกินความจำเป็น (Over-gripping)'
+        },
+        {
+            id: 'modE',
+            code: 'Module E',
+            title: 'การเพิ่มความยืดหยุ่นและการเคลื่อนไหวของสะโพก (Hip Mobility & Active Flexibility)',
+            category: 'mobility',
+            categoryLabel: 'ความยืดหยุ่น',
+            duration: '20–30 นาที',
+            equip: 'เสื่อโยคะ, บล็อกยืดตัว',
+            physio: 'ขยายช่วงการเคลื่อนไหวสะโพกและความแข็งแรงในมุมสุด เพื่อรองรับท่า Drop-knee, Heel hook และ High steps',
+            steps: [
+                '90/90 Hip Stretch & Rotations: ยืดและหมุนข้อต่อสะโพกแบบ Active เพิ่มช่วงการหมุนเข้า/ออก สำหรับ Drop-knee และ Heel hook (3 เซต x 60 วินาที/ข้าง)',
+                'Cossack Squat: ย่อสแควตข้างเสริมความแข็งแรงและความยืดหยุ่นกล้ามเนื้อต้นขาด้านใน (3 เซต x 8–10 ครั้ง/ข้าง)',
+                'Frog Stretch with PNF: ยืดกางสะโพกแบบ PNF ออกแรงกดเข่าลงพื้นเกร็งต้าน 7 วินาที แล้วผ่อนคลายกดสะโพกลึกลงอีก 30 วินาที ช่วยให้แนบสะโพกชิดผนัง (3 เซต)',
+                'Pancake Straddle Fold: นั่งกางขายืดก้มตัวเพื่อยืดกล้ามเนื้อต้นขาด้านหลัง (3 เซต x 45–60 วินาที)'
+            ],
+            caution: 'การยืดแบบ PNF ต้องทำหลังจากร่างกายอุ่นดีแล้วเท่านั้น และห้ามออกแรงกระตุกรุนแรง'
+        },
+        {
+            id: 'modF',
+            code: 'Module F',
+            title: 'การฝึกกล้ามเนื้อตรงข้ามและการป้องกันการบาดเจ็บ (Antagonist & Conditioning)',
+            category: 'conditioning',
+            categoryLabel: 'ปรับสมดุลและฟื้นฟู',
+            duration: '20–25 นาที',
+            equip: 'ดัมเบล (2–5 kg), ยางยืด, บาร์โหน/พื้น',
+            physio: 'ปรับสมดุลกล้ามเนื้อตรงข้ามและเสริมความมั่นคงของสะบัก เพื่อลดแรงเค้นที่จุดเกาะเอ็นข้อศอกและไหล่',
+            steps: [
+                'Overhead Dumbbell Press หรือ Push-ups: ออกแรงดันดัมเบลขึ้นเหนือศีรษะหรือดันพื้น เพื่อสร้างความแข็งแรงให้หัวไหล่และอก (3 เซต x 6–8 ครั้ง)',
+                'Wrist Extensor Curls: กระดกข้อมือขึ้นด้วยดัมเบล 2–5 กิโลกรัม เพื่อสร้างความแข็งแรงให้กล้ามเนื้อเหยียดข้อมือ ลดแรงเค้นข้อศอก (3 เซต x 15–20 ครั้ง)',
+                'Scapular Push-ups + Reverse Flyes: ดันพื้นเน้นขยับสะบักร่วมกับการกางแขนดึงยางยืดไปด้านหลัง (3 เซต x 12 ครั้ง)'
+            ],
+            caution: 'เน้นการควบคุมจังหวะการหย่อนน้ำหนัก (Eccentric Phase) อย่างช้าๆ 2–3 วินาที เพื่อสร้างความแข็งแรงของเนื้อเยื่ออย่างเต็มที่'
+        }
+    ];
 
-            showDayDetail(daysConfig[0]);
+    // App State Management
+    let appState = {
+        gender: 'male',
+        age: 27,
+        weight: 70,
+        fat: 16,
+        experience: 'beg_2',
+        goal: 'both',
+        weaknesses: ['finger', 'hip_back'],
+        daysPerWeek: 3,
+        radarValues: {
+            baseline: [55, 50, 60, 65, 58],
+            target: [80, 80, 85, 85, 80]
+        },
+        priorityModules: ['modB', 'modE'],
+        // Checkbox tracking state
+        completedSteps: JSON.parse(localStorage.getItem('climbfit_completed_steps') || '{}'),
+        completedTasks: JSON.parse(localStorage.getItem('climbfit_completed_tasks') || '{}')
+    };
+
+    // Save Checkbox Progress
+    function saveProgress() {
+        localStorage.setItem('climbfit_completed_steps', JSON.stringify(appState.completedSteps));
+        localStorage.setItem('climbfit_completed_tasks', JSON.stringify(appState.completedTasks));
+    }
+
+    // Chart Instances
+    let radarChartInstance = null;
+    let macrocycleChartInstance = null;
+    let activeMacroDataset = 'both';
+
+    // View Router Function
+    function switchView(viewId) {
+        document.querySelectorAll('.page-view').forEach(view => view.classList.add('hidden'));
+        document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+
+        const targetView = document.getElementById(viewId);
+        if (targetView) {
+            targetView.classList.remove('hidden');
         }
 
-        function showDayDetail(day) {
-            const panel = document.getElementById('dayDetailPanel');
-            panel.innerHTML = `
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 border-b border-sand-200 pb-3">
-                    <h3 class="font-heading font-bold text-xl text-slatecustom-800">${day.label}</h3>
-                    <span class="text-xs px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full font-semibold">${day.focus}</span>
-                </div>
+        const navBtn = document.getElementById(`nav-${viewId}`);
+        if (navBtn) {
+            navBtn.classList.add('active');
+        }
 
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                    <div class="md:col-span-5 space-y-2">
-                        <h4 class="font-heading font-semibold text-xs text-slate-500 uppercase">มอดูลที่จัดไว้ในวันนี้:</h4>
-                        <div class="flex flex-wrap gap-2">
-                            ${day.modules.map(m => `<span class="px-3 py-1.5 bg-white border border-sand-300 rounded-lg text-xs font-bold text-slatecustom-800 shadow-sm">${m}</span>`).join('')}
-                        </div>
-                    </div>
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
-                    <div class="md:col-span-7 space-y-2">
-                        <h4 class="font-heading font-semibold text-xs text-slate-500 uppercase">ลำดับกิจกรรมหลัก:</h4>
-                        <p class="text-xs text-slate-700 bg-white p-3 rounded-lg border border-sand-200 leading-relaxed">${day.desc}</p>
-                    </div>
-                </div>
+        // Trigger chart re-render/resize when entering specific views
+        if (viewId === 'profileView') {
+            setTimeout(() => renderRadarChart(), 100);
+        } else if (viewId === 'periodizationView') {
+            setTimeout(() => renderMacrocycleChart(), 100);
+        }
+    }
 
-                <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 flex items-center space-x-2">
-                    <span>📌</span>
-                    <span><strong>คำแนะนำประจำวัน:</strong> ${day.note}</span>
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        menu.classList.toggle('hidden');
+    }
+
+    // Form Processing Algorithm
+    function processAssessment() {
+        // Read basic inputs
+        appState.gender = document.getElementById('inputGender').value;
+        appState.age = parseInt(document.getElementById('inputAge').value) || 27;
+        appState.weight = parseFloat(document.getElementById('inputWeight').value) || 70;
+        appState.fat = parseFloat(document.getElementById('inputFat').value) || 16;
+        appState.experience = document.getElementById('inputExp').value;
+        appState.goal = document.getElementById('inputGoal').value;
+
+        // Read selected weaknesses
+        const selectedWeaknesses = [];
+        document.querySelectorAll('input[name="weakness"]:checked').forEach(cb => {
+            selectedWeaknesses.push(cb.value);
+        });
+        appState.weaknesses = selectedWeaknesses;
+
+        // Read days per week
+        const dayRadio = document.querySelector('input[name="daysPerWeek"]:checked');
+        appState.daysPerWeek = dayRadio ? parseInt(dayRadio.value) : 3;
+
+        // Calculate Radar Baseline & Target Scores
+        let fingerScore = 65, hipScore = 65, endurScore = 65, footworkScore = 65, coreScore = 65;
+
+        appState.priorityModules = [];
+
+        if (selectedWeaknesses.includes('finger')) {
+            fingerScore -= 25;
+            appState.priorityModules.push('modB');
+        }
+        if (selectedWeaknesses.includes('hip_back')) {
+            hipScore -= 25;
+            appState.priorityModules.push('modE');
+        }
+        if (selectedWeaknesses.includes('endurance')) {
+            endurScore -= 25;
+            appState.priorityModules.push('modD');
+        }
+        if (selectedWeaknesses.includes('footwork')) {
+            footworkScore -= 20;
+            appState.priorityModules.push('modC');
+        }
+        if (selectedWeaknesses.includes('core_push')) {
+            coreScore -= 20;
+            appState.priorityModules.push('modF');
+        }
+        if (selectedWeaknesses.includes('high_weight')) {
+            fingerScore -= 10;
+            if (!appState.priorityModules.includes('modB')) appState.priorityModules.push('modB');
+        }
+
+        // Always ensure at least Module A warm-up is presented
+        if (!appState.priorityModules.includes('modA')) appState.priorityModules.unshift('modA');
+
+        appState.radarValues.baseline = [fingerScore, hipScore, endurScore, footworkScore, coreScore];
+        appState.radarValues.target = [
+            Math.min(95, fingerScore + 30),
+            Math.min(95, hipScore + 30),
+            Math.min(95, endurScore + 30),
+            Math.min(95, footworkScore + 25),
+            Math.min(95, coreScore + 25)
+        ];
+
+        // Render Dynamic Diagnostics
+        renderDiagnosticView();
+        renderModules();
+        renderWeeklySchedule();
+        updateCalculatorBW();
+
+        // Navigate to Profile View
+        switchView('profileView');
+    }
+
+    // Render Diagnostic Profile View
+    function renderDiagnosticView() {
+        const titleEl = document.getElementById('customProfileTitle');
+        const descEl = document.getElementById('customProfileDesc');
+        const badgeContainer = document.getElementById('userBadgeSummary');
+        const insightsContainer = document.getElementById('dynamicInsightsContainer');
+
+        // Set Badges
+        const expLabel = {
+            'beg_1': 'มือใหม่เริ่มต้น (<1ปี)',
+            'beg_2': 'มือใหม่พัฒนาการ (1-2ปี)',
+            'int_3': 'ระดับกลาง (2-4ปี)',
+            'adv': 'ระดับสูง (>4ปี)'
+        }[appState.experience];
+
+        const goalLabel = {
+            'both': 'Bouldering + Lead',
+            'boulder': 'เน้น Bouldering',
+            'lead': 'เน้น Lead Climbing'
+        }[appState.goal];
+
+        badgeContainer.innerHTML = `
+            <span class="px-2.5 py-1 bg-sand-200 text-slate-800 rounded-lg font-bold"><i class="fa-solid fa-user mr-1"></i>${expLabel}</span>
+            <span class="px-2.5 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-lg font-bold"><i class="fa-solid fa-bullseye mr-1"></i>${goalLabel}</span>
+            <span class="px-2.5 py-1 bg-olive-500/10 text-olive-700 rounded-lg font-bold"><i class="fa-solid fa-calendar-week mr-1"></i>${appState.daysPerWeek} วัน/สัปดาห์</span>
+        `;
+
+        titleEl.innerHTML = `ผลวิเคราะห์สรีรวิทยาการปีนผาเฉพาะบุคคล (น้ำหนัก ${appState.weight} kg / ไขมัน ${appState.fat}%)`;
+
+        descEl.innerHTML = `
+            จากการวิเคราะห์สรีรวิทยาและข้อจำกัดที่คุณเลือก ระบบประเมินพบว่าคุณต้องการโปรแกรมซ้อมที่เน้น
+            <span class="font-bold text-terracotta-600">${appState.priorityModules.map(mId => {
+                const m = modulesLibrary.find(x => x.id === mId);
+                return m ? m.code : '';
+            }).join(', ')}</span> 
+            เป็นพิเศษ เพื่อปิดช่องว่างการส่งกำลัง กระตุ้นเนื้อเยื่อเกี่ยวพัน และสร้างความยืดหยุ่นของสะโพกสำหรับการแนบตัวเข้าหาผนัง
+        `;
+
+        // Render Insights Cards
+        insightsContainer.innerHTML = '';
+
+        if (appState.weaknesses.includes('finger')) {
+            insightsContainer.innerHTML += `
+                <div class="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
+                    <h4 class="font-bold text-amber-900 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-hand text-amber-600"></i> โปรโตคอลฟื้นฟูแรงจับนิ้วมือ (Finger Strength)
+                    </h4>
+                    <p class="text-xs text-amber-800">
+                        แนะนำให้ใช้ <b>Module B (Submaximal Hangs 20mm)</b> โหนค้าง 10 วินาที ด้วยความตึง RPE 7–8 โดยสลับระหว่าง Half Crimp และ Open Drag งดท่า Full Crimp เพื่อปกป้องเอ็น A2
+                    </p>
                 </div>
             `;
         }
 
-        function renderMacrocycleChart() {
-            const ctx = document.getElementById('macrocycleChart').getContext('2d');
-            const weeks = Array.from({length: 12}, (_, i) => `W${i+1}`);
-            
-            let volumeData = [70, 75, 80, 85, 90, 45, 75, 80, 85, 90, 95, 50];
-            let intensityData = [60, 65, 70, 75, 80, 50, 80, 85, 90, 90, 95, 50];
+        if (appState.weaknesses.includes('hip_back')) {
+            insightsContainer.innerHTML += `
+                <div class="p-4 bg-purple-50 rounded-xl border border-purple-200 space-y-1">
+                    <h4 class="font-bold text-purple-900 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-child text-purple-600"></i> โปรโตคอลขยายช่วงการเคลื่อนไหวสะโพก (PNF Mobility)
+                    </h4>
+                    <p class="text-xs text-purple-800">
+                        เน้นปฏิบัติตาม <b>Module E (Frog Stretch PNF)</b> หลังจบเซสชันการปีน ออกแรงเกร็งต้าน 7 วินาที แล้วผ่อนคลายยืดลึก 30 วินาที ช่วยให้แนบสะโพกชิดผนังได้ดีขึ้น
+                    </p>
+                </div>
+            `;
+        }
 
-            if (userProfile.goal === 'boulder') {
-                intensityData = [70, 75, 80, 85, 90, 50, 85, 90, 95, 95, 100, 50];
-                volumeData = [65, 70, 75, 80, 80, 45, 70, 75, 80, 80, 85, 45];
-                document.getElementById('block1Desc').innerText = 'เน้นการสร้าง Finger Submaximal Capacity, Limit Bouldering และ Hip Mobility';
-                document.getElementById('block2Desc').innerText = 'เน้น Peak Power, Contact Strength และการแก้โจทย์ขีดจำกัด (Limit Boulder Max)';
-            } else if (userProfile.goal === 'lead') {
-                volumeData = [75, 80, 85, 90, 95, 50, 80, 85, 90, 95, 100, 50];
-                intensityData = [60, 65, 70, 70, 75, 45, 75, 80, 80, 85, 85, 50];
-                document.getElementById('block1Desc').innerText = 'เน้นการปรับตัวของเนื้อเยื่อ, Aerobic Capacity และทักษะ Micro-Shakes';
-                document.getElementById('block2Desc').innerText = 'เน้น Lactic Power Endurance, Double Route Laps และการควบคุม Pacing';
-            }
+        if (appState.weaknesses.includes('endurance')) {
+            insightsContainer.innerHTML += `
+                <div class="p-4 bg-red-50 rounded-xl border border-red-200 space-y-1">
+                    <h4 class="font-bold text-red-900 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-lungs text-red-600"></i> โปรโตคอลความทนทานเชิงกำลัง (Power Endurance)
+                    </h4>
+                    <p class="text-xs text-red-800">
+                        เน้นใช้ <b>Module D (4x4s Protocol / Double Route Laps)</b> ร่วมกับการฝึกสลัดมือพัก (Micro-shakes) ช่วยขับกรดแลกติกออกจากท่อนแขน
+                    </p>
+                </div>
+            `;
+        }
 
-            if (macroChartInstance) {
-                macroChartInstance.destroy();
-            }
+        if (insightsContainer.children.length === 0) {
+            insightsContainer.innerHTML = `
+                <div class="p-4 bg-emerald-50 rounded-xl border border-emerald-200 space-y-1">
+                    <h4 class="font-bold text-emerald-900 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-check-circle text-emerald-600"></i> ร่างกายอยู่ในสภาวะสมดุลพร้อมพัฒนา
+                    </h4>
+                    <p class="text-xs text-emerald-800">
+                        เน้นการฝึกผสมผสานระหว่างเทคนิคการบิดสะโพก (Module C) การสร้างกำลังนิ้วมือ (Module B) และการฝึกกล้ามเนื้อตรงข้าม (Module F) เพื่อการเติบโตแบบยั่งยืน
+                    </p>
+                </div>
+            `;
+        }
+    }
 
-            macroChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: weeks,
-                    datasets: [
-                        {
-                            label: 'ปริมาณงาน (Volume %)',
-                            data: volumeData,
-                            borderColor: '#d96b43',
-                            backgroundColor: 'rgba(217, 107, 67, 0.1)',
-                            fill: true,
-                            tension: 0.3,
-                            borderWidth: 3
-                        },
-                        {
-                            label: 'ความเข้มข้น (Intensity %)',
-                            data: intensityData,
-                            borderColor: '#65743b',
-                            borderWidth: 2,
-                            borderDash: [5, 5],
-                            tension: 0.3
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            min: 30,
-                            max: 100,
-                            ticks: { callback: v => v + '%' }
-                        }
+    // Render Radar Chart
+    function renderRadarChart() {
+        const ctx = document.getElementById('radarChart');
+        if (!ctx) return;
+
+        if (radarChartInstance) {
+            radarChartInstance.destroy();
+        }
+
+        radarChartInstance = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: [
+                    'แรงจับนิ้วมือ (Finger Force)',
+                    'มุมเคลื่อนไหวสะโพก (Hip Mobility)',
+                    'ความทนทานเชิงกำลัง (Endurance)',
+                    'การจัดระเบียบร่างกาย (Footwork)',
+                    'ความมั่นคงแกนกลาง (Core Stability)'
+                ],
+                datasets: [
+                    {
+                        label: 'ระดับปัจจุบัน (Baseline)',
+                        data: appState.radarValues.baseline,
+                        backgroundColor: 'rgba(217, 107, 67, 0.25)',
+                        borderColor: '#d96b43',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#d96b43'
                     },
-                    plugins: {
-                        legend: { position: 'bottom' },
-                        tooltip: {
-                            callbacks: {
-                                afterBody: (ctx) => {
-                                    const index = ctx[0].dataIndex;
-                                    if(index === 5 || index === 11) {
-                                        return '\n⚠️ DELOAD WEEK: ลดปริมาณงาน 50% เพื่อให้คอลลาเจนเอ็นข้อต่อฟื้นตัว';
-                                    }
-                                }
-                            }
+                    {
+                        label: 'เป้าหมาย 12 สัปดาห์ (Target)',
+                        data: appState.radarValues.target,
+                        backgroundColor: 'rgba(101, 116, 59, 0.15)',
+                        borderColor: '#65743b',
+                        borderWidth: 2,
+                        borderDash: [4, 4],
+                        pointBackgroundColor: '#65743b'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        min: 0,
+                        max: 100,
+                        ticks: { display: false },
+                        pointLabels: {
+                            font: { family: 'Kanit', size: 11 }
                         }
                     }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { family: 'Sarabun', size: 12 } }
+                    }
                 }
+            }
+        });
+    }
+
+    // Render Modules Grid
+    function renderModules(filter = 'all') {
+        const grid = document.getElementById('modulesGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const filtered = filter === 'all' ? modulesLibrary : modulesLibrary.filter(m => m.category === filter);
+
+        filtered.forEach(mod => {
+            const isPriority = appState.priorityModules.includes(mod.id);
+            
+            // Calculate completion progress for this module
+            const totalSteps = mod.steps.length;
+            let completedCount = 0;
+            mod.steps.forEach((_, idx) => {
+                if (appState.completedSteps[`${mod.id}_step_${idx}`]) {
+                    completedCount++;
+                }
+            });
+            const progressPct = Math.round((completedCount / totalSteps) * 100);
+
+            const card = document.createElement('div');
+            card.className = `bg-white rounded-2xl p-5 border ${isPriority ? 'border-terracotta-500 shadow-md ring-1 ring-terracotta-500/30' : 'border-sand-200'} transition duration-300 flex flex-col justify-between space-y-4 hover:shadow-lg`;
+
+            card.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="px-2.5 py-1 bg-terracotta-500/10 text-terracotta-600 text-xs font-bold rounded-lg border border-terracotta-500/20">${mod.code}</span>
+                        ${isPriority ? '<span class="px-2 py-0.5 bg-terracotta-500 text-white text-[10px] font-bold rounded-full shadow-sm"><i class="fa-solid fa-star mr-1"></i>เน้นเป็นพิเศษ</span>' : `<span class="text-xs text-slate-400"><i class="fa-regular fa-clock mr-1"></i>${mod.duration}</span>`}
+                    </div>
+                    <h3 class="text-base font-bold text-slatecustom-800 line-clamp-2">${mod.title}</h3>
+                    <p class="text-xs text-slate-600 bg-sand-50 p-2.5 rounded-lg border border-sand-200">
+                        <strong class="text-terracotta-600"><i class="fa-solid fa-atom mr-1"></i>เป้าหมาย:</strong> ${mod.physio}
+                    </p>
+                </div>
+
+                <div class="space-y-3 pt-2 border-t border-sand-200">
+                    <!-- Module Progress Bar -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] font-semibold text-slate-600">
+                            <span><i class="fa-solid fa-square-check text-terracotta-600 mr-1"></i>ความคืบหน้าการฝึก:</span>
+                            <span class="text-terracotta-600">${completedCount}/${totalSteps} (${progressPct}%)</span>
+                        </div>
+                        <div class="w-full bg-sand-200 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-terracotta-500 h-full transition-all duration-300" style="width: ${progressPct}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-slate-500">
+                        <i class="fa-solid fa-toolbox mr-1"></i><b>อุปกรณ์:</b> ${mod.equip}
+                    </div>
+                    <button onclick="openModal('${mod.id}')" class="w-full py-2.5 bg-sand-200 hover:bg-terracotta-500 hover:text-white text-slate-800 text-xs font-bold rounded-xl transition duration-200 flex items-center justify-center gap-1.5">
+                        รายละเอียด & ติ๊กทำกิจกรรม <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                    </button>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    function filterModules(category) {
+        document.querySelectorAll('.mod-filter').forEach(btn => {
+            btn.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
+            btn.classList.add('text-slate-600');
+        });
+        event.target.classList.add('bg-white', 'shadow-sm', 'text-slate-800');
+        renderModules(category);
+    }
+
+    // Modal Handlers & Step Checkboxes
+    let activeModalModId = null;
+
+    function openModal(id) {
+        activeModalModId = id;
+        const mod = modulesLibrary.find(m => m.id === id);
+        if (!mod) return;
+
+        document.getElementById('modalCode').innerText = mod.code;
+        document.getElementById('modalTitle').innerText = mod.title;
+        document.getElementById('modalDuration').innerText = `ระยะเวลา: ${mod.duration}`;
+        document.getElementById('modalPhysio').innerText = mod.physio;
+        document.getElementById('modalEquip').innerText = mod.equip;
+        document.getElementById('modalCaution').innerText = mod.caution;
+
+        renderModalSteps(mod);
+        document.getElementById('moduleModal').classList.remove('hidden');
+    }
+
+    function renderModalSteps(mod) {
+        const stepsUl = document.getElementById('modalSteps');
+        let completed = 0;
+
+        stepsUl.innerHTML = mod.steps.map((step, idx) => {
+            const key = `${mod.id}_step_${idx}`;
+            const isChecked = !!appState.completedSteps[key];
+            if (isChecked) completed++;
+
+            return `
+                <li class="bg-sand-50 p-2.5 rounded-lg border border-sand-200 flex items-start gap-2.5 text-xs text-slate-700 hover:bg-sand-100/80 transition">
+                    <input type="checkbox" id="${key}" ${isChecked ? 'checked' : ''} onchange="toggleStepCheck('${mod.id}', ${idx})" class="mt-0.5 w-4 h-4 accent-terracotta-500 rounded cursor-pointer">
+                    <label for="${key}" class="cursor-pointer select-none leading-relaxed flex-1 ${isChecked ? 'completed-item' : ''}">
+                        <span class="font-bold text-terracotta-600 mr-1">${idx + 1}.</span>
+                        <span>${step}</span>
+                    </label>
+                </li>
+            `;
+        }).join('');
+
+        document.getElementById('modalStepProgress').innerText = `${completed}/${mod.steps.length} สำเร็จ`;
+    }
+
+    function toggleStepCheck(modId, stepIdx) {
+        const key = `${modId}_step_${stepIdx}`;
+        if (appState.completedSteps[key]) {
+            delete appState.completedSteps[key];
+        } else {
+            appState.completedSteps[key] = true;
+            playBeepSound('short');
+        }
+        saveProgress();
+
+        const mod = modulesLibrary.find(m => m.id === modId);
+        if (mod) {
+            renderModalSteps(mod);
+        }
+        renderModules(); // Update main card progress bar
+    }
+
+    function closeModal() {
+        document.getElementById('moduleModal').classList.add('hidden');
+        activeModalModId = null;
+    }
+
+    // Render Weekly Schedule Matrix with Checkboxes
+    function renderWeeklySchedule() {
+        const grid = document.getElementById('weeklyScheduleGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const daysCount = appState.daysPerWeek;
+
+        let scheduleData = [];
+
+        if (daysCount === 3) {
+            scheduleData = [
+                { dayKey: 'mon', day: 'วันจันทร์', focus: 'Finger Force & Power', mods: ['modA', 'modB', 'modC'], note: 'เน้นกำลังสูงสุดและแรงจับนิ้ว', color: 'text-amber-600' },
+                { dayKey: 'tue', day: 'วันอังคาร', focus: 'Active Rest & Hip Mobility', mods: ['modE'], note: 'ยืดเหยียดสะโพก ฟื้นตัว', color: 'text-purple-600' },
+                { dayKey: 'wed', day: 'วันพุธ', focus: 'Power Endurance & Skill', mods: ['modA', 'modD', 'modF'], note: 'ความทนทานและปรับสมดุล', color: 'text-blue-600' },
+                { dayKey: 'thu', day: 'วันพฤหัสบดี', focus: 'Full Rest Day', mods: [], note: 'พักผ่อนระบบประสาท', color: 'text-slate-500' },
+                { dayKey: 'fri', day: 'วันศุกร์', focus: 'Lead & Technique Volume', mods: ['modA', 'modC', 'modE'], note: 'ปีนจับจังหวะเทคนิค', color: 'text-emerald-600' },
+                { dayKey: 'sat', day: 'วันเสาร์', focus: 'Active Rest & Core', mods: ['modF'], note: 'ฟื้นฟูกล้ามเนื้อตรงข้าม', color: 'text-teal-600' },
+                { dayKey: 'sun', day: 'วันอาทิตย์', focus: 'Full Rest Day', mods: [], note: 'พักผ่อนร่างกายเต็มที่', color: 'text-slate-500' }
+            ];
+        } else if (daysCount === 4) {
+            scheduleData = [
+                { dayKey: 'mon', day: 'วันจันทร์', focus: 'Finger Hangs & Limit Boulder', mods: ['modA', 'modB', 'modC'], note: 'เน้นกำลังสูงสุด', color: 'text-amber-600' },
+                { dayKey: 'tue', day: 'วันอังคาร', focus: 'Lead Laps & Endurance', mods: ['modA', 'modD', 'modE'], note: 'ความทนทานปีนเชือก', color: 'text-blue-600' },
+                { dayKey: 'wed', day: 'วันพุธ', focus: 'Active Rest & Antagonist', mods: ['modF'], note: 'พักผ่อนแอคทีฟ', color: 'text-teal-600' },
+                { dayKey: 'thu', day: 'วันพฤหัสบดี', focus: 'Finger Hangs & Technique', mods: ['modA', 'modB', 'modC'], note: 'โหนค้าง & สลัดมือพัก', color: 'text-amber-600' },
+                { dayKey: 'fri', day: 'วันศุกร์', focus: 'Power Endurance (4x4s)', mods: ['modA', 'modD', 'modF'], note: 'ความทนทานเชิงกำลัง', color: 'text-red-600' },
+                { dayKey: 'sat', day: 'วันเสาร์', focus: 'Hip Mobility & Stretch', mods: ['modE'], note: 'ยืดสะโพก PNF', color: 'text-purple-600' },
+                { dayKey: 'sun', day: 'วันอาทิตย์', focus: 'Full Rest Day', mods: [], note: 'พักผ่อนเต็มที่', color: 'text-slate-500' }
+            ];
+        } else { // 5 Days
+            scheduleData = [
+                { dayKey: 'mon', day: 'วันจันทร์', focus: 'Finger Hangs & Power', mods: ['modA', 'modB', 'modC'], note: 'เน้นกำลังสูงสุด', color: 'text-amber-600' },
+                { dayKey: 'tue', day: 'วันอังคาร', focus: 'Power Endurance 4x4s', mods: ['modA', 'modD'], note: 'ความทนทานเชิงกำลัง', color: 'text-red-600' },
+                { dayKey: 'wed', day: 'วันพุธ', focus: 'Active Rest & Mobility', mods: ['modE', 'modF'], note: 'ยืดสะโพก & ปรับสมดุล', color: 'text-purple-600' },
+                { dayKey: 'thu', day: 'วันพฤหัสบดี', focus: 'Submaximal Hangs & Drills', mods: ['modA', 'modB', 'modC'], note: 'เน้นเทคนิค Hips-to-Wall', color: 'text-amber-600' },
+                { dayKey: 'fri', day: 'วันศุกร์', focus: 'Lead Volume Session', mods: ['modA', 'modD'], note: 'ปีนซ้ำเส้นทางเชือก', color: 'text-emerald-600' },
+                { dayKey: 'sat', day: 'วันเสาร์', focus: 'Outdoor / Fun Climbing', mods: ['modA', 'modE'], note: 'ปีนอิสระ / ผาธรรมชาติ', color: 'text-blue-600' },
+                { dayKey: 'sun', day: 'วันอาทิตย์', focus: 'Full Rest Day', mods: [], note: 'พักผ่อนเต็มที่', color: 'text-slate-500' }
+            ];
+        }
+
+        scheduleData.forEach((item) => {
+            const dayMainKey = `day_main_${item.dayKey}`;
+            const isDayMainDone = !!appState.completedTasks[dayMainKey];
+
+            const card = document.createElement('div');
+            card.className = "bg-sand-50 border border-sand-200 rounded-xl p-4 flex flex-col justify-between space-y-3 shadow-sm hover:border-terracotta-500/50 transition";
+            
+            let modsChecklistHTML = '';
+            if (item.mods.length > 0) {
+                modsChecklistHTML = item.mods.map(mId => {
+                    const m = modulesLibrary.find(x => x.id === mId);
+                    const modTaskKey = `day_${item.dayKey}_mod_${mId}`;
+                    const isModDone = !!appState.completedTasks[modTaskKey];
+
+                    return `
+                        <div class="flex items-center justify-between p-1.5 bg-white border border-sand-300 rounded text-xs">
+                            <label for="${modTaskKey}" class="flex items-center gap-1.5 cursor-pointer font-semibold text-slate-700 flex-1 ${isModDone ? 'completed-item' : ''}">
+                                <input type="checkbox" id="${modTaskKey}" ${isModDone ? 'checked' : ''} onchange="toggleWeeklyTaskCheck('${modTaskKey}')" class="accent-terracotta-500 rounded cursor-pointer w-3.5 h-3.5">
+                                <span>${m ? m.code : mId}</span>
+                            </label>
+                            <button onclick="openModal('${mId}')" title="ดูรายละเอียด" class="text-[10px] text-terracotta-600 hover:text-terracotta-700 px-1">
+                                <i class="fa-solid fa-circle-info"></i>
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                modsChecklistHTML = `<span class="text-xs text-slate-400 italic block py-2 text-center">Rest Day (วันพักผ่อน)</span>`;
+            }
+
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold text-sm ${item.color}">${item.day}</span>
+                        <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-500 cursor-pointer">
+                            <input type="checkbox" id="${dayMainKey}" ${isDayMainDone ? 'checked' : ''} onchange="toggleWeeklyTaskCheck('${dayMainKey}')" class="w-4 h-4 accent-terracotta-500 rounded cursor-pointer">
+                            <span>เสร็จสิ้นวัน</span>
+                        </label>
+                    </div>
+                    <div class="text-xs font-bold text-slatecustom-800 mb-2.5 ${isDayMainDone ? 'completed-item' : ''}">${item.focus}</div>
+                    <div class="space-y-1.5">
+                        ${modsChecklistHTML}
+                    </div>
+                </div>
+                <div class="text-[10px] text-slate-500 pt-2 border-t border-sand-200">${item.note}</div>
+            `;
+
+            grid.appendChild(card);
+        });
+    }
+
+    function toggleWeeklyTaskCheck(taskKey) {
+        if (appState.completedTasks[taskKey]) {
+            delete appState.completedTasks[taskKey];
+        } else {
+            appState.completedTasks[taskKey] = true;
+            playBeepSound('short');
+        }
+        saveProgress();
+        renderWeeklySchedule();
+    }
+
+    function resetWeeklyCheckmarks() {
+        if (confirm("คุณต้องการรีเซ็ตเครื่องหมายติ๊กถูกทั้งหมดในตารางซ้อมใช่หรือไม่?")) {
+            appState.completedTasks = {};
+            saveProgress();
+            renderWeeklySchedule();
+        }
+    }
+
+    // Render 12-Week Macrocycle Periodization Chart
+    function renderMacrocycleChart() {
+        const ctx = document.getElementById('macrocycleChart');
+        if (!ctx) return;
+
+        if (macrocycleChartInstance) {
+            macrocycleChartInstance.destroy();
+        }
+
+        const labels = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6 (Deload)', 'W7', 'W8', 'W9', 'W10', 'W11', 'W12 (Peak)'];
+        const volumeData = [60, 70, 80, 85, 90, 45, 65, 75, 85, 90, 95, 40];
+        const intensityData = [50, 55, 65, 75, 80, 40, 70, 80, 85, 90, 95, 50];
+
+        let datasets = [];
+
+        if (activeMacroDataset === 'volume' || activeMacroDataset === 'both') {
+            datasets.push({
+                label: 'ปริมาณงาน (Volume %)',
+                data: volumeData,
+                borderColor: '#d96b43',
+                backgroundColor: 'rgba(217, 107, 67, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3
             });
         }
 
-        function calculateTargetHang() {
-            const bw = parseFloat(document.getElementById('calcBW').value) || userProfile.weight;
-            const rpe = parseFloat(document.getElementById('calcRpe').value) || 0.8;
-            
-            const targetLoad = bw * rpe;
-            const unweightNeeded = bw - targetLoad;
-
-            document.getElementById('targetHangWeight').innerText = 
-                `${targetLoad.toFixed(1)} kg (ช่วยยันเท้า/พยุง ~${unweightNeeded.toFixed(1)} kg)`;
+        if (activeMacroDataset === 'intensity' || activeMacroDataset === 'both') {
+            datasets.push({
+                label: 'ความเข้มข้น (Intensity %)',
+                data: intensityData,
+                borderColor: '#65743b',
+                backgroundColor: 'rgba(101, 116, 59, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3
+            });
         }
 
-        /* HANG BOARD TIMER SYSTEM */
-        let hangInterval = null;
-        let hangPhase = 'idle'; 
-        let hangTimeLeft = 10.0;
-        let currentHangSet = 1;
-        let totalHangSets = 4;
-        let hangRestDuration = 120;
-
-        function updateHangUI() {
-            document.getElementById('hangSetDisplay').innerText = `เซตที่ ${currentHangSet} / ${totalHangSets}`;
-            
-            if (hangPhase === 'hang') {
-                document.getElementById('hangPhaseBadge').className = 'px-2 py-0.5 rounded bg-terracotta-500 text-white font-semibold animate-pulse';
-                document.getElementById('hangPhaseBadge').innerText = '🔥 เฟสโหนนิ้ว (WORK)';
-                document.getElementById('hangStatus').innerText = 'เกร็งแกนกลางลำตัว! โหนสม่ำเสมอ';
-                document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-terracotta-500';
-            } else if (hangPhase === 'rest') {
-                document.getElementById('hangPhaseBadge').className = 'px-2 py-0.5 rounded bg-blue-600 text-white font-semibold animate-pulse';
-                document.getElementById('hangPhaseBadge').innerText = '☕ เฟสพักสมบูรณ์ (REST)';
-                document.getElementById('hangStatus').innerText = 'ผ่อนคลายกล้ามเนื้อ สะบัดมือเบาๆ';
-                document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-blue-400';
-            } else if (hangPhase === 'completed') {
-                document.getElementById('hangPhaseBadge').className = 'px-2 py-0.5 rounded bg-emerald-600 text-white font-semibold';
-                document.getElementById('hangPhaseBadge').innerText = '🎉 ครบเซตการฝึก';
-                document.getElementById('hangStatus').innerText = 'เสร็จสิ้นครบทุกเซต! พักผ่อนได้';
-                document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-emerald-400';
-            } else {
-                document.getElementById('hangPhaseBadge').className = 'px-2 py-0.5 rounded bg-slate-600 text-white font-semibold';
-                document.getElementById('hangPhaseBadge').innerText = 'เตรียมพร้อม';
-                document.getElementById('hangStatus').innerText = 'พร้อมเริ่มต้น (Density Hang 10s)';
-                document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-amber-400';
-            }
-
-            document.getElementById('hangTimerDisplay').innerText = hangTimeLeft.toFixed(1) + 's';
-        }
-
-        function startHangTimer() {
-            if (hangInterval) return;
-
-            totalHangSets = parseInt(document.getElementById('hangSetsSelect').value) || 4;
-            hangRestDuration = parseInt(document.getElementById('hangRestSelect').value) || 120;
-
-            if (hangPhase === 'idle' || hangPhase === 'completed') {
-                currentHangSet = 1;
-                hangPhase = 'hang';
-                hangTimeLeft = 10.0;
-            }
-
-            updateHangUI();
-
-            hangInterval = setInterval(() => {
-                hangTimeLeft -= 0.1;
-
-                if (hangTimeLeft <= 0.05) {
-                    if (hangPhase === 'hang') {
-                        hangPhase = 'rest';
-                        hangTimeLeft = hangRestDuration;
-                    } else if (hangPhase === 'rest') {
-                        if (currentHangSet < totalHangSets) {
-                            currentHangSet++;
-                            hangPhase = 'hang';
-                            hangTimeLeft = 10.0;
-                        } else {
-                            clearInterval(hangInterval);
-                            hangInterval = null;
-                            hangPhase = 'completed';
-                            hangTimeLeft = 0.0;
-                        }
+        macrocycleChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: { labels: labels, datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: 0,
+                        max: 100,
+                        ticks: { callback: value => value + '%' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { font: { family: 'Sarabun', size: 12 } }
                     }
                 }
-                updateHangUI();
-            }, 100);
-        }
-
-        function pauseHangTimer() {
-            if (hangInterval) {
-                clearInterval(hangInterval);
-                hangInterval = null;
-                document.getElementById('hangStatus').innerText = '⏸️ หยุดชั่วคราว';
-                document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-amber-300';
             }
+        });
+    }
+
+    function toggleMacroDataset(type) {
+        activeMacroDataset = type;
+        const btnVol = document.getElementById('toggleVolumeBtn');
+        const btnInt = document.getElementById('toggleIntensityBtn');
+
+        if (type === 'volume') {
+            btnVol.className = 'px-3 py-1.5 bg-terracotta-500 text-white rounded-lg shadow-sm';
+            btnInt.className = 'px-3 py-1.5 bg-sand-200 text-slate-700 rounded-lg hover:bg-sand-300';
+        } else if (type === 'intensity') {
+            btnVol.className = 'px-3 py-1.5 bg-sand-200 text-slate-700 rounded-lg hover:bg-sand-300';
+            btnInt.className = 'px-3 py-1.5 bg-olive-600 text-white rounded-lg shadow-sm';
+        } else {
+            btnVol.className = 'px-3 py-1.5 bg-terracotta-500 text-white rounded-lg shadow-sm';
+            btnInt.className = 'px-3 py-1.5 bg-olive-600 text-white rounded-lg shadow-sm';
         }
 
-        function resetHangTimer() {
-            pauseHangTimer();
-            hangPhase = 'idle';
-            currentHangSet = 1;
-            hangTimeLeft = 10.0;
-            updateHangUI();
+        renderMacrocycleChart();
+    }
+
+    // Hangboard Load Calculator & Timer Logic
+    let hangTimer = null;
+    let hangTimeLeft = 10;
+    let isHangWorkState = true;
+    let hangSetCurrent = 1;
+    let hangSetTotal = 6;
+    let isHangRunning = false;
+
+    function updateCalculatorBW() {
+        const bwInput = document.getElementById('calcBW');
+        if (bwInput) {
+            bwInput.value = appState.weight;
+            calculateHangLoad();
         }
+    }
 
-        /* PNF TIMER SYSTEM */
-        let pnfInterval = null;
-        let pnfPhase = 'idle';
-        let pnfTimeLeft = 7;
-        let currentPnfSet = 1;
-        let totalPnfSets = 3;
-        let pnfRestDuration = 45;
+    function calculateHangLoad() {
+        const bw = parseFloat(document.getElementById('calcBW').value) || 70;
+        const rpeMult = parseFloat(document.getElementById('calcRpe').value) || 0.80;
+        const target = bw * rpeMult;
+        const assist = bw - target;
 
-        function updatePnfUI() {
-            document.getElementById('pnfSetDisplay').innerText = `รอบที่ ${currentPnfSet} / ${totalPnfSets}`;
+        document.getElementById('targetHangWeight').innerText = `${target.toFixed(1)} kg (ช่วยยันเท้า ~${assist.toFixed(1)} kg)`;
+    }
 
-            if (pnfPhase === 'contract') {
-                document.getElementById('pnfPhaseBadge').className = 'px-2 py-0.5 rounded bg-amber-500 text-white font-semibold animate-pulse';
-                document.getElementById('pnfPhaseBadge').innerText = '⚠️ เฟสเกร็งต้าน (CONTRACT - 7s)';
-                document.getElementById('pnfStatus').innerText = 'เกร็งต้านพื้น 70% Force!';
-                document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-amber-400';
-            } else if (pnfPhase === 'relax') {
-                document.getElementById('pnfPhaseBadge').className = 'px-2 py-0.5 rounded bg-emerald-600 text-white font-semibold animate-pulse';
-                document.getElementById('pnfPhaseBadge').innerText = '🧘 เฟสผ่อนยืด (RELAX - 30s)';
-                document.getElementById('pnfStatus').innerText = 'ผ่อนคลาย ทิ้งสะโพก/หลังลึกลงมุมใหม่';
-                document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-emerald-400';
-            } else if (pnfPhase === 'rest') {
-                document.getElementById('pnfPhaseBadge').className = 'px-2 py-0.5 rounded bg-blue-600 text-white font-semibold animate-pulse';
-                document.getElementById('pnfPhaseBadge').innerText = '☕ เฟสพักรอบ (REST)';
-                document.getElementById('pnfStatus').innerText = 'คลายกล้ามเนื้อ หายใจเข้า-ออกลึกๆ';
-                document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-blue-400';
-            } else if (pnfPhase === 'completed') {
-                document.getElementById('pnfPhaseBadge').className = 'px-2 py-0.5 rounded bg-emerald-600 text-white font-semibold';
-                document.getElementById('pnfPhaseBadge').innerText = '🎉 ครบทุกรอบการยืด';
-                document.getElementById('pnfStatus').innerText = 'เสร็จสิ้น PNF Mobility Session!';
-                document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-emerald-400';
-            } else {
-                document.getElementById('pnfPhaseBadge').className = 'px-2 py-0.5 rounded bg-slate-600 text-white font-semibold';
-                document.getElementById('pnfPhaseBadge').innerText = 'เตรียมพร้อม';
-                document.getElementById('pnfStatus').innerText = 'พร้อมสำหรับ PNF Mobility Stretch';
-                document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-emerald-400';
-            }
+    function toggleHangTimer() {
+        initAudioContext();
+        const btn = document.getElementById('startHangBtn');
+        if (isHangRunning) {
+            clearInterval(hangTimer);
+            isHangRunning = false;
+            btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต่อ`;
+            btn.classList.replace('bg-amber-600', 'bg-terracotta-500');
+        } else {
+            isHangRunning = true;
+            btn.innerHTML = `<i class="fa-solid fa-pause"></i> หยุดชั่วคราว`;
+            btn.classList.replace('bg-terracotta-500', 'bg-amber-600');
 
-            document.getElementById('pnfTimerDisplay').innerText = (pnfTimeLeft < 10 ? '0' : '') + pnfTimeLeft + 's';
-        }
+            hangSetTotal = parseInt(document.getElementById('hangSetsSelect').value) || 6;
 
-        function startPnfTimer() {
-            if (pnfInterval) return;
+            hangTimer = setInterval(() => {
+                hangTimeLeft--;
+                updateHangDisplay();
 
-            totalPnfSets = parseInt(document.getElementById('pnfSetsSelect').value) || 3;
-            pnfRestDuration = parseInt(document.getElementById('pnfRestSelect').value) || 45;
+                // Sound alerts for countdown
+                if (hangTimeLeft > 0 && hangTimeLeft <= 3) {
+                    playBeepSound('countdown');
+                }
 
-            if (pnfPhase === 'idle' || pnfPhase === 'completed') {
-                currentPnfSet = 1;
-                pnfPhase = 'contract';
-                pnfTimeLeft = 7;
-            }
-
-            updatePnfUI();
-
-            pnfInterval = setInterval(() => {
-                pnfTimeLeft--;
-
-                if (pnfTimeLeft <= 0) {
-                    if (pnfPhase === 'contract') {
-                        pnfPhase = 'relax';
-                        pnfTimeLeft = 30;
-                    } else if (pnfPhase === 'relax') {
-                        pnfPhase = 'rest';
-                        pnfTimeLeft = pnfRestDuration;
-                    } else if (pnfPhase === 'rest') {
-                        if (currentPnfSet < totalPnfSets) {
-                            currentPnfSet++;
-                            pnfPhase = 'contract';
-                            pnfTimeLeft = 7;
-                        } else {
-                            clearInterval(pnfInterval);
-                            pnfInterval = null;
-                            pnfPhase = 'completed';
-                            pnfTimeLeft = 0;
+                if (hangTimeLeft <= 0) {
+                    if (isHangWorkState) {
+                        playBeepSound('high');
+                        // Switch to Rest Phase
+                        isHangWorkState = false;
+                        hangTimeLeft = parseInt(document.getElementById('hangRestSelect').value) || 120;
+                        document.getElementById('hangStatus').innerText = "ช่วงพักผ่อน (REST PHASE)";
+                        document.getElementById('hangStatus').className = "text-sm font-medium tracking-wide uppercase text-blue-400";
+                        document.getElementById('hangPhaseBadge').innerText = "พักสมบูรณ์ (REST)";
+                        document.getElementById('hangPhaseBadge').className = "px-2.5 py-0.5 rounded bg-blue-600 text-white font-semibold";
+                    } else {
+                        // Switch to Work Phase
+                        hangSetCurrent++;
+                        if (hangSetCurrent > hangSetTotal) {
+                            playBeepSound('complete');
+                            resetHangTimer();
+                            document.getElementById('hangStatus').innerText = "จบเซสชัน Hangboard เรียบร้อย!";
+                            return;
                         }
+                        playBeepSound('high');
+                        isHangWorkState = true;
+                        hangTimeLeft = 10;
+                        document.getElementById('hangStatus').innerText = "ช่วงโหนค้าง (HANG PHASE)";
+                        document.getElementById('hangStatus').className = "text-sm font-medium tracking-wide uppercase text-amber-400";
+                        document.getElementById('hangPhaseBadge').innerText = "เฟสโหนนิ้ว (WORK)";
+                        document.getElementById('hangPhaseBadge').className = "px-2.5 py-0.5 rounded bg-terracotta-500 text-white font-semibold";
+                        document.getElementById('hangSetDisplay').innerText = `เซตที่ ${hangSetCurrent} / ${hangSetTotal}`;
                     }
                 }
-                updatePnfUI();
             }, 1000);
         }
+    }
 
-        function pausePnfTimer() {
-            if (pnfInterval) {
-                clearInterval(pnfInterval);
-                pnfInterval = null;
-                document.getElementById('pnfStatus').innerText = '⏸️ หยุดชั่วคราว';
-                document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-amber-300';
+    function updateHangDisplay() {
+        const mins = Math.floor(hangTimeLeft / 60);
+        const secs = hangTimeLeft % 60;
+        document.getElementById('hangTimerDisplay').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function resetHangTimer() {
+        clearInterval(hangTimer);
+        isHangRunning = false;
+        isHangWorkState = true;
+        hangSetCurrent = 1;
+        hangTimeLeft = 10;
+        hangSetTotal = parseInt(document.getElementById('hangSetsSelect').value) || 6;
+
+        document.getElementById('hangSetDisplay').innerText = `เซตที่ 1 / ${hangSetTotal}`;
+        document.getElementById('hangStatus').innerText = "พร้อมเริ่มต้น (โหนค้าง 10s)";
+        document.getElementById('hangStatus').className = "text-sm font-medium tracking-wide uppercase text-amber-400";
+        document.getElementById('hangPhaseBadge').innerText = "เฟสโหนนิ้ว (WORK)";
+        document.getElementById('hangPhaseBadge').className = "px-2.5 py-0.5 rounded bg-terracotta-500 text-white font-semibold";
+        document.getElementById('startHangBtn').innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น`;
+        document.getElementById('startHangBtn').className = "px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 rounded-lg text-white shadow-md transition-transform active:scale-95 flex items-center gap-1.5";
+        updateHangDisplay();
+    }
+
+    // PNF Stretch Timer Logic
+    let pnfTimer = null;
+    let pnfTimeLeft = 7;
+    let pnfPhaseState = 'contract'; // 'contract' -> 'stretch'
+    let isPnfRunning = false;
+
+    function togglePNFTimer() {
+        initAudioContext();
+        const btn = document.getElementById('startPnfBtn');
+        const statusLabel = document.getElementById('pnfStatus');
+        const phaseBadge = document.getElementById('pnfPhaseBadge');
+
+        if (isPnfRunning) {
+            clearInterval(pnfTimer);
+            isPnfRunning = false;
+            btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต่อ`;
+        } else {
+            isPnfRunning = true;
+            btn.innerHTML = `<i class="fa-solid fa-pause"></i> หยุดชั่วคราว`;
+
+            if (pnfPhaseState === 'contract') {
+                statusLabel.innerText = "กดเข่าลงพื้นออกแรงเกร็งต้าน 7 วินาที!";
+                statusLabel.className = "text-sm font-medium tracking-wide uppercase text-amber-400";
+                phaseBadge.innerText = "เกร็งต้าน (CONTRACT)";
+                phaseBadge.className = "px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold";
             }
+
+            pnfTimer = setInterval(() => {
+                pnfTimeLeft--;
+                updatePNFDisplay();
+
+                if (pnfTimeLeft > 0 && pnfTimeLeft <= 3) {
+                    playBeepSound('countdown');
+                }
+
+                if (pnfTimeLeft <= 0) {
+                    if (pnfPhaseState === 'contract') {
+                        playBeepSound('high');
+                        pnfPhaseState = 'stretch';
+                        pnfTimeLeft = 30;
+                        statusLabel.innerText = "ผ่อนคลายและกดสะโพกลึกลงอีก 30 วินาที!";
+                        statusLabel.className = "text-sm font-medium tracking-wide uppercase text-emerald-400";
+                        phaseBadge.innerText = "ยืดผ่อนลึก (STRETCH)";
+                        phaseBadge.className = "px-2.5 py-0.5 rounded bg-emerald-600 text-white font-semibold";
+                    } else {
+                        playBeepSound('complete');
+                        resetPNFTimer();
+                        statusLabel.innerText = "จบครบรอบ PNF แล้ว! พัก 1 นาที ก่อนรอบถัดไป";
+                    }
+                }
+            }, 1000);
         }
+    }
 
-        function resetPnfTimer() {
-            pausePnfTimer();
-            pnfPhase = 'idle';
-            currentPnfSet = 1;
-            pnfTimeLeft = 7;
-            updatePnfUI();
-        }
+    function updatePNFDisplay() {
+        const mins = Math.floor(pnfTimeLeft / 60);
+        const secs = pnfTimeLeft % 60;
+        document.getElementById('pnfTimerDisplay').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
 
-        function setupToolsListeners() {
-            document.getElementById('calcBW').addEventListener('input', calculateTargetHang);
-            document.getElementById('calcRpe').addEventListener('change', calculateTargetHang);
+    function resetPNFTimer() {
+        clearInterval(pnfTimer);
+        isPnfRunning = false;
+        pnfPhaseState = 'contract';
+        pnfTimeLeft = 7;
+        document.getElementById('pnfStatus').innerText = "เตรียมพร้อมจัดท่า Frog Stretch";
+        document.getElementById('pnfStatus').className = "text-sm font-medium tracking-wide uppercase text-emerald-400";
+        document.getElementById('pnfPhaseBadge').innerText = "เฟสเกร็งต้าน (CONTRACT)";
+        document.getElementById('pnfPhaseBadge').className = "px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold";
+        document.getElementById('startPNFBtn') ? document.getElementById('startPNFBtn').innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น PNF` : null;
+        const pnfBtn = document.getElementById('startPnfBtn');
+        if (pnfBtn) pnfBtn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น PNF`;
+        updatePNFDisplay();
+    }
 
-            // Hang Timer
-            document.getElementById('startHangBtn').addEventListener('click', startHangTimer);
-            document.getElementById('pauseHangBtn').addEventListener('click', pauseHangTimer);
-            document.getElementById('resetHangBtn').addEventListener('click', resetHangTimer);
-            document.getElementById('hangSetsSelect').addEventListener('change', resetHangTimer);
-            document.getElementById('hangRestSelect').addEventListener('change', resetHangTimer);
-
-            // PNF Timer
-            document.getElementById('startPnfBtn').addEventListener('click', startPnfTimer);
-            document.getElementById('pausePnfBtn').addEventListener('click', pausePnfTimer);
-            document.getElementById('resetPnfBtn').addEventListener('click', resetPnfTimer);
-            document.getElementById('pnfSetsSelect').addEventListener('change', resetPnfTimer);
-            document.getElementById('pnfRestSelect').addEventListener('change', resetPnfTimer);
-
-            // Macrocycle chart toggle
-            document.getElementById('toggleVolumeBtn').addEventListener('click', (e) => {
-                e.target.className = 'px-3 py-1.5 bg-terracotta-500 text-white rounded-lg shadow-sm';
-                document.getElementById('toggleIntensityBtn').className = 'px-3 py-1.5 bg-sand-200 text-slate-700 rounded-lg hover:bg-sand-300';
-                macroChartInstance.data.datasets[0].hidden = false;
-                macroChartInstance.update();
-            });
-
-            document.getElementById('toggleIntensityBtn').addEventListener('click', (e) => {
-                e.target.className = 'px-3 py-1.5 bg-olive-600 text-white rounded-lg shadow-sm';
-                document.getElementById('toggleVolumeBtn').className = 'px-3 py-1.5 bg-sand-200 text-slate-700 rounded-lg hover:bg-sand-300';
-                macroChartInstance.data.datasets[0].hidden = true;
-                macroChartInstance.update();
-            });
-        }
-
-        // Modal Controls
-        window.openModuleModal = function(modId) {
-            const mod = modulesLibrary.find(m => m.id === modId);
-            if(!mod) return;
-
-            document.getElementById('modalCode').innerText = mod.code;
-            document.getElementById('modalTitle').innerText = mod.title;
-            document.getElementById('modalDuration').innerText = `ระยะเวลา: ${mod.duration}`;
-            document.getElementById('modalPhysio').innerText = mod.physio;
-            document.getElementById('modalEquip').innerText = mod.equip;
-            document.getElementById('modalCaution').innerText = mod.caution;
-
-            const stepsList = document.getElementById('modalSteps');
-            stepsList.innerHTML = '';
-            mod.steps.forEach(step => {
-                const li = document.createElement('li');
-                li.innerText = step;
-                stepsList.appendChild(li);
-            });
-
-            document.getElementById('moduleModal').classList.remove('hidden');
-        };
-
-        function closeModal() {
-            document.getElementById('moduleModal').classList.add('hidden');
-        }
-    </script>
+    // Initialize App on DOM Ready
+    document.addEventListener('DOMContentLoaded', () => {
+        renderModules();
+        renderWeeklySchedule();
+        calculateHangLoad();
+    });
+</script>
 </body>
 </html>
