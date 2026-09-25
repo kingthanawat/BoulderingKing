@@ -88,6 +88,12 @@
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #d96b43;
         }
+        /* Day selection toggle styles */
+        .day-toggle input:checked + div {
+            background-color: #d96b43;
+            color: white;
+            border-color: #d96b43;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased">
@@ -243,30 +249,71 @@
                 </div>
 
                 <!-- Days Availability -->
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-sand-100 rounded-xl border border-sand-200">
+                <div class="flex flex-col space-y-4 p-4 bg-sand-100 rounded-xl border border-sand-200">
                     <div>
                         <label class="font-heading font-bold text-slatecustom-800 text-sm block">
-                            <i class="fa-regular fa-calendar-check text-terracotta-500 mr-1"></i> จำนวนวันที่สะดวกฝึกซ้อมต่อสัปดาห์:
+                            <i class="fa-regular fa-calendar-check text-terracotta-500 mr-1"></i> เลือกวันที่สะดวกฝึกซ้อม (เลือก 3-5 วัน):
                         </label>
-                        <span class="text-xs text-slate-500">ระบบจะจัดเรียง Module ตามกฎพักฟื้นระบบประสาทให้อัตโนมัติ</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <label class="px-3 py-2 bg-white border border-sand-300 rounded-lg cursor-pointer flex items-center space-x-2 hover:border-terracotta-500">
-                            <input type="radio" name="daysPerWeek" value="3" checked class="accent-terracotta-500">
-                            <span class="font-bold">3 วัน/สัปดาห์</span>
-                        </label>
-                        <label class="px-3 py-2 bg-white border border-sand-300 rounded-lg cursor-pointer flex items-center space-x-2 hover:border-terracotta-500">
-                            <input type="radio" name="daysPerWeek" value="4" class="accent-terracotta-500">
-                            <span class="font-bold">4 วัน/สัปดาห์</span>
-                        </label>
-                        <label class="px-3 py-2 bg-white border border-sand-300 rounded-lg cursor-pointer flex items-center space-x-2 hover:border-terracotta-500">
-                            <input type="radio" name="daysPerWeek" value="5" class="accent-terracotta-500">
-                            <span class="font-bold">5 วัน/สัปดาห์</span>
-                        </label>
+                        <span class="text-xs text-slate-500 block mb-3">ระบบจะจัดเรียง Module ให้ตรงกับวันที่คุณเลือก โดยคำนึงถึงกฎการพักฟื้นตามสรีรวิทยา</span>
+                        
+                        <div class="flex flex-wrap gap-2" id="daySelectionContainer">
+                            <!-- Mon -->
+                            <label class="day-toggle cursor-pointer">
+                                <input type="checkbox" name="availableDays" value="mon" checked class="hidden" onchange="updateSelectedDaysCount()">
+                                <div class="px-4 py-2 bg-white border border-sand-300 rounded-lg text-slate-700 font-bold hover:border-terracotta-400 transition-colors text-center w-[60px]">
+                                    จ.
+                                </div>
+                            </label>
+                            <!-- Tue -->
+                            <label class="day-toggle cursor-pointer">
+                                <input type="checkbox" name="availableDays" value="tue" class="hidden" onchange="updateSelectedDaysCount()">
+                                <div class="px-4 py-2 bg-white border border-sand-300 rounded-lg text-slate-700 font-bold hover:border-terracotta-400 transition-colors text-center w-[60px]">
+                                    อ.
+                                </div>
+                            </label>
+                            <!-- Wed -->
+                            <label class="day-toggle cursor-pointer">
+                                <input type="checkbox" name="availableDays" value="wed" checked class="hidden" onchange="updateSelectedDaysCount()">
+                                <div class="px-4 py-2 bg-white border border-sand-300 rounded-lg text-slate-700 font-bold hover:border-terracotta-400 transition-colors text-center w-[60px]">
+                                    พ.
+                                </div>
+                            </label>
+                            <!-- Thu -->
+                            <label class="day-toggle cursor-pointer">
+                                <input type="checkbox" name="availableDays" value="thu" class="hidden" onchange="updateSelectedDaysCount()">
+                                <div class="px-4 py-2 bg-white border border-sand-300 rounded-lg text-slate-700 font-bold hover:border-terracotta-400 transition-colors text-center w-[60px]">
+                                    พฤ.
+                                </div>
+                            </label>
+                            <!-- Fri -->
+                            <label class="day-toggle cursor-pointer">
+                                <input type="checkbox" name="availableDays" value="fri" checked class="hidden" onchange="updateSelectedDaysCount()">
+                                <div class="px-4 py-2 bg-white border border-sand-300 rounded-lg text-slate-700 font-bold hover:border-terracotta-400 transition-colors text-center w-[60px]">
+                                    ศ.
+                                </div>
+                            </label>
+                            <!-- Sat -->
+                            <label class="day-toggle cursor-pointer">
+                                <input type="checkbox" name="availableDays" value="sat" class="hidden" onchange="updateSelectedDaysCount()">
+                                <div class="px-4 py-2 bg-white border border-sand-300 rounded-lg text-slate-700 font-bold hover:border-terracotta-400 transition-colors text-center w-[60px]">
+                                    ส.
+                                </div>
+                            </label>
+                            <!-- Sun -->
+                            <label class="day-toggle cursor-pointer">
+                                <input type="checkbox" name="availableDays" value="sun" class="hidden" onchange="updateSelectedDaysCount()">
+                                <div class="px-4 py-2 bg-white border border-sand-300 rounded-lg text-slate-700 font-bold hover:border-terracotta-400 transition-colors text-center w-[60px]">
+                                    อา.
+                                </div>
+                            </label>
+                        </div>
+                        <div id="daySelectionWarning" class="text-red-500 text-xs font-bold mt-2 hidden">
+                            กรุณาเลือก 3 ถึง 5 วัน
+                        </div>
                     </div>
                 </div>
 
-                <button type="button" onclick="processAssessment()" class="w-full py-4 bg-terracotta-500 hover:bg-terracotta-600 text-white font-heading font-bold text-base rounded-xl shadow-md transition-transform active:scale-[0.99] flex items-center justify-center gap-2">
+                <button type="button" id="processBtn" onclick="processAssessment()" class="w-full py-4 bg-terracotta-500 hover:bg-terracotta-600 text-white font-heading font-bold text-base rounded-xl shadow-md transition-transform active:scale-[0.99] flex items-center justify-center gap-2">
                     <i class="fa-solid fa-bolt"></i>
                     <span>ประมวลผล และไปยังหน้าผลวิเคราะห์ (Generate & Go to Results)</span>
                     <i class="fa-solid fa-arrow-right"></i>
@@ -375,7 +422,7 @@
                     </span>
                     <h2 id="scheduleTitle" class="font-heading font-bold text-2xl text-slatecustom-800">ตารางซ้อมรายวันตามเวลาของคุณ</h2>
                     <p class="text-slate-600 text-sm mt-1">
-                        จัดเรียง Module ตามหลักสรีรวิทยา ป้องกันความล้าของระบบประสาทส่วนกลาง (CNS) และมี Checkbox ให้คุณติ๊กติดตามผลแต่ละหัวข้อการซ้อม
+                        จัดเรียง Module ตามวันที่คุณสะดวก (<span id="scheduleDaysLabel" class="font-bold text-terracotta-600"></span>) และตามหลักสรีรวิทยา ป้องกันความล้าของระบบประสาท
                     </p>
                 </div>
                 <button onclick="resetWeeklyCheckmarks()" class="text-xs bg-sand-200 hover:bg-sand-300 text-slate-800 px-3 py-2 rounded-lg transition flex items-center gap-1.5">
@@ -403,8 +450,8 @@
                         เอ็นยึดข้อต่อ (Tendon & Ligament) ต้องการเวลาอย่างน้อย 48 ชั่วโมงในการซ่อมแซมคอลลาเจนหลังการฝึกแรงดึงสูง
                     </div>
                     <div class="p-3 bg-slatecustom-700/50 rounded-lg border border-slatecustom-700">
-                        <span class="font-bold text-amber-300 block mb-1">3. Active Recovery & Mobility Day</span>
-                        การยืดเหยียด PNF สะโพก (Module E) ช่วยให้เลือดหมุนเวียน นำสารอาหารไปเลี้ยงเนื้อเยื่อเกี่ยวพันในวันพัก
+                        <span class="font-bold text-amber-300 block mb-1">3. จัดสรรตามวันที่สะดวก</span>
+                        ระบบพยายามกระจายความหนักให้เหมาะสมกับวันที่คุณเลือก หากมีวันซ้อมติดกัน จะจัดสรรให้เป็นวัน Active Rest หรือเน้นความทนทานแทนกำลังสูงสุด
                     </div>
                 </div>
             </div>
@@ -850,6 +897,17 @@
         }
     ];
 
+    // Days structure for reference
+    const daysData = [
+        { key: 'mon', name: 'วันจันทร์' },
+        { key: 'tue', name: 'วันอังคาร' },
+        { key: 'wed', name: 'วันพุธ' },
+        { key: 'thu', name: 'วันพฤหัสบดี' },
+        { key: 'fri', name: 'วันศุกร์' },
+        { key: 'sat', name: 'วันเสาร์' },
+        { key: 'sun', name: 'วันอาทิตย์' }
+    ];
+
     // App State Management
     let appState = {
         gender: 'male',
@@ -860,6 +918,7 @@
         goal: 'both',
         weaknesses: ['finger', 'hip_back'],
         daysPerWeek: 3,
+        availableDays: ['mon', 'wed', 'fri'], // Default
         radarValues: {
             baseline: [55, 50, 60, 65, 58],
             target: [80, 80, 85, 85, 80]
@@ -911,8 +970,30 @@
         menu.classList.toggle('hidden');
     }
 
+    // Validate Day Selection
+    function updateSelectedDaysCount() {
+        const selected = document.querySelectorAll('input[name="availableDays"]:checked');
+        const warning = document.getElementById('daySelectionWarning');
+        const btn = document.getElementById('processBtn');
+        
+        if (selected.length < 3 || selected.length > 5) {
+            warning.classList.remove('hidden');
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            return false;
+        } else {
+            warning.classList.add('hidden');
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            return true;
+        }
+    }
+
     // Form Processing Algorithm
     function processAssessment() {
+        if (!updateSelectedDaysCount()) {
+            alert("กรุณาเลือกวันที่สะดวกฝึกซ้อม 3 ถึง 5 วัน");
+            return;
+        }
+
         // Read basic inputs
         appState.gender = document.getElementById('inputGender').value;
         appState.age = parseInt(document.getElementById('inputAge').value) || 27;
@@ -928,9 +1009,16 @@
         });
         appState.weaknesses = selectedWeaknesses;
 
-        // Read days per week
-        const dayRadio = document.querySelector('input[name="daysPerWeek"]:checked');
-        appState.daysPerWeek = dayRadio ? parseInt(dayRadio.value) : 3;
+        // Read days availability
+        const selectedDays = [];
+        document.querySelectorAll('input[name="availableDays"]:checked').forEach(cb => {
+            selectedDays.push(cb.value);
+        });
+        // Sort selected days based on the standard week order
+        appState.availableDays = selectedDays.sort((a, b) => {
+            return daysData.findIndex(d => d.key === a) - daysData.findIndex(d => d.key === b);
+        });
+        appState.daysPerWeek = appState.availableDays.length;
 
         // Calculate Radar Baseline & Target Scores
         let fingerScore = 65, hipScore = 65, endurScore = 65, footworkScore = 65, coreScore = 65;
@@ -1008,7 +1096,7 @@
         badgeContainer.innerHTML = `
             <span class="px-2.5 py-1 bg-sand-200 text-slate-800 rounded-lg font-bold"><i class="fa-solid fa-user mr-1"></i>${expLabel}</span>
             <span class="px-2.5 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-lg font-bold"><i class="fa-solid fa-bullseye mr-1"></i>${goalLabel}</span>
-            <span class="px-2.5 py-1 bg-olive-500/10 text-olive-700 rounded-lg font-bold"><i class="fa-solid fa-calendar-week mr-1"></i>${appState.daysPerWeek} วัน/สัปดาห์</span>
+            <span class="px-2.5 py-1 bg-olive-500/10 text-olive-700 rounded-lg font-bold"><i class="fa-solid fa-calendar-week mr-1"></i>ซ้อม ${appState.daysPerWeek} วัน</span>
         `;
 
         titleEl.innerHTML = `ผลวิเคราะห์สรีรวิทยาการปีนผาเฉพาะบุคคล (น้ำหนัก ${appState.weight} kg / ไขมัน ${appState.fat}%)`;
@@ -1276,54 +1364,77 @@
     // Render Weekly Schedule Matrix with Checkboxes
     function renderWeeklySchedule() {
         const grid = document.getElementById('weeklyScheduleGrid');
+        const daysLabel = document.getElementById('scheduleDaysLabel');
         if (!grid) return;
+        
         grid.innerHTML = '';
+        
+        const selectedDaysKeys = appState.availableDays;
+        
+        // Update label
+        const daysNames = selectedDaysKeys.map(k => daysData.find(d => d.key === k).name.replace('วัน', ''));
+        if(daysLabel) daysLabel.innerText = daysNames.join(', ');
 
         const daysCount = appState.daysPerWeek;
 
-        let scheduleData = [];
+        // Base Workouts to assign based on days
+        // Define workout types
+        const wTypes = {
+            power: { focus: 'Finger Force & Power', mods: ['modA', 'modB', 'modC'], note: 'เน้นกำลังสูงสุดและแรงจับนิ้ว', color: 'text-amber-600' },
+            endurance: { focus: 'Power Endurance', mods: ['modA', 'modD', 'modF'], note: 'ความทนทานเชิงกำลัง', color: 'text-red-600' },
+            active: { focus: 'Active Rest & Mobility', mods: ['modE', 'modF'], note: 'ยืดเหยียด ฟื้นฟูสมดุล', color: 'text-purple-600' },
+            tech: { focus: 'Lead & Technique', mods: ['modA', 'modC', 'modE'], note: 'เทคนิคการปีน และยืดสะโพก', color: 'text-blue-600' },
+            rest: { focus: 'Full Rest Day', mods: [], note: 'พักผ่อนร่างกายเต็มที่', color: 'text-slate-500' }
+        };
 
+        // Determine assignment logic based on selected days
+        let dayAssignments = {};
+        
         if (daysCount === 3) {
-            scheduleData = [
-                { dayKey: 'mon', day: 'วันจันทร์', focus: 'Finger Force & Power', mods: ['modA', 'modB', 'modC'], note: 'เน้นกำลังสูงสุดและแรงจับนิ้ว', color: 'text-amber-600' },
-                { dayKey: 'tue', day: 'วันอังคาร', focus: 'Active Rest & Hip Mobility', mods: ['modE'], note: 'ยืดเหยียดสะโพก ฟื้นตัว', color: 'text-purple-600' },
-                { dayKey: 'wed', day: 'วันพุธ', focus: 'Power Endurance & Skill', mods: ['modA', 'modD', 'modF'], note: 'ความทนทานและปรับสมดุล', color: 'text-blue-600' },
-                { dayKey: 'thu', day: 'วันพฤหัสบดี', focus: 'Full Rest Day', mods: [], note: 'พักผ่อนระบบประสาท', color: 'text-slate-500' },
-                { dayKey: 'fri', day: 'วันศุกร์', focus: 'Lead & Technique Volume', mods: ['modA', 'modC', 'modE'], note: 'ปีนจับจังหวะเทคนิค', color: 'text-emerald-600' },
-                { dayKey: 'sat', day: 'วันเสาร์', focus: 'Active Rest & Core', mods: ['modF'], note: 'ฟื้นฟูกล้ามเนื้อตรงข้าม', color: 'text-teal-600' },
-                { dayKey: 'sun', day: 'วันอาทิตย์', focus: 'Full Rest Day', mods: [], note: 'พักผ่อนร่างกายเต็มที่', color: 'text-slate-500' }
-            ];
+            dayAssignments[selectedDaysKeys[0]] = wTypes.power;
+            dayAssignments[selectedDaysKeys[1]] = wTypes.endurance;
+            dayAssignments[selectedDaysKeys[2]] = wTypes.tech;
         } else if (daysCount === 4) {
-            scheduleData = [
-                { dayKey: 'mon', day: 'วันจันทร์', focus: 'Finger Hangs & Limit Boulder', mods: ['modA', 'modB', 'modC'], note: 'เน้นกำลังสูงสุด', color: 'text-amber-600' },
-                { dayKey: 'tue', day: 'วันอังคาร', focus: 'Lead Laps & Endurance', mods: ['modA', 'modD', 'modE'], note: 'ความทนทานปีนเชือก', color: 'text-blue-600' },
-                { dayKey: 'wed', day: 'วันพุธ', focus: 'Active Rest & Antagonist', mods: ['modF'], note: 'พักผ่อนแอคทีฟ', color: 'text-teal-600' },
-                { dayKey: 'thu', day: 'วันพฤหัสบดี', focus: 'Finger Hangs & Technique', mods: ['modA', 'modB', 'modC'], note: 'โหนค้าง & สลัดมือพัก', color: 'text-amber-600' },
-                { dayKey: 'fri', day: 'วันศุกร์', focus: 'Power Endurance (4x4s)', mods: ['modA', 'modD', 'modF'], note: 'ความทนทานเชิงกำลัง', color: 'text-red-600' },
-                { dayKey: 'sat', day: 'วันเสาร์', focus: 'Hip Mobility & Stretch', mods: ['modE'], note: 'ยืดสะโพก PNF', color: 'text-purple-600' },
-                { dayKey: 'sun', day: 'วันอาทิตย์', focus: 'Full Rest Day', mods: [], note: 'พักผ่อนเต็มที่', color: 'text-slate-500' }
-            ];
-        } else { // 5 Days
-            scheduleData = [
-                { dayKey: 'mon', day: 'วันจันทร์', focus: 'Finger Hangs & Power', mods: ['modA', 'modB', 'modC'], note: 'เน้นกำลังสูงสุด', color: 'text-amber-600' },
-                { dayKey: 'tue', day: 'วันอังคาร', focus: 'Power Endurance 4x4s', mods: ['modA', 'modD'], note: 'ความทนทานเชิงกำลัง', color: 'text-red-600' },
-                { dayKey: 'wed', day: 'วันพุธ', focus: 'Active Rest & Mobility', mods: ['modE', 'modF'], note: 'ยืดสะโพก & ปรับสมดุล', color: 'text-purple-600' },
-                { dayKey: 'thu', day: 'วันพฤหัสบดี', focus: 'Submaximal Hangs & Drills', mods: ['modA', 'modB', 'modC'], note: 'เน้นเทคนิค Hips-to-Wall', color: 'text-amber-600' },
-                { dayKey: 'fri', day: 'วันศุกร์', focus: 'Lead Volume Session', mods: ['modA', 'modD'], note: 'ปีนซ้ำเส้นทางเชือก', color: 'text-emerald-600' },
-                { dayKey: 'sat', day: 'วันเสาร์', focus: 'Outdoor / Fun Climbing', mods: ['modA', 'modE'], note: 'ปีนอิสระ / ผาธรรมชาติ', color: 'text-blue-600' },
-                { dayKey: 'sun', day: 'วันอาทิตย์', focus: 'Full Rest Day', mods: [], note: 'พักผ่อนเต็มที่', color: 'text-slate-500' }
-            ];
+            dayAssignments[selectedDaysKeys[0]] = wTypes.power;
+            dayAssignments[selectedDaysKeys[1]] = wTypes.endurance;
+            dayAssignments[selectedDaysKeys[2]] = wTypes.active;
+            dayAssignments[selectedDaysKeys[3]] = wTypes.tech;
+        } else { // 5 days
+            dayAssignments[selectedDaysKeys[0]] = wTypes.power;
+            dayAssignments[selectedDaysKeys[1]] = wTypes.endurance;
+            dayAssignments[selectedDaysKeys[2]] = wTypes.active;
+            dayAssignments[selectedDaysKeys[3]] = wTypes.power; // 2nd power day
+            dayAssignments[selectedDaysKeys[4]] = wTypes.tech;
         }
+
+        // Adjust for consecutive days if possible (simple heuristic)
+        // If days are back-to-back, try not to put two hard days together.
+        // For a more robust algorithm, we'd check indices. For now, we use the assignment map.
+
+        const scheduleData = daysData.map(dayInfo => {
+            const assignment = dayAssignments[dayInfo.key] || wTypes.rest;
+            return {
+                dayKey: dayInfo.key,
+                day: dayInfo.name,
+                focus: assignment.focus,
+                mods: assignment.mods,
+                note: assignment.note,
+                color: assignment.color
+            };
+        });
 
         scheduleData.forEach((item) => {
             const dayMainKey = `day_main_${item.dayKey}`;
             const isDayMainDone = !!appState.completedTasks[dayMainKey];
+            const isRestDay = item.mods.length === 0;
+            const isSelected = selectedDaysKeys.includes(item.dayKey);
 
             const card = document.createElement('div');
-            card.className = "bg-sand-50 border border-sand-200 rounded-xl p-4 flex flex-col justify-between space-y-3 shadow-sm hover:border-terracotta-500/50 transition";
+            // Highlight selected days
+            card.className = `border rounded-xl p-4 flex flex-col justify-between space-y-3 transition shadow-sm ${isSelected ? 'bg-white border-terracotta-200 hover:border-terracotta-500/50' : 'bg-sand-50/50 border-sand-200 opacity-70'}`;
             
             let modsChecklistHTML = '';
-            if (item.mods.length > 0) {
+            if (!isRestDay) {
                 modsChecklistHTML = item.mods.map(mId => {
                     const m = modulesLibrary.find(x => x.id === mId);
                     const modTaskKey = `day_${item.dayKey}_mod_${mId}`;
@@ -1345,21 +1456,26 @@
                 modsChecklistHTML = `<span class="text-xs text-slate-400 italic block py-2 text-center">Rest Day (วันพักผ่อน)</span>`;
             }
 
+            // Only show main checkbox if it's not a full rest day (or maybe show it to mark rest as completed)
+            const mainCheckboxHtml = !isRestDay ? `
+                <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-500 cursor-pointer">
+                    <input type="checkbox" id="${dayMainKey}" ${isDayMainDone ? 'checked' : ''} onchange="toggleWeeklyTaskCheck('${dayMainKey}')" class="w-4 h-4 accent-terracotta-500 rounded cursor-pointer">
+                    <span>เสร็จสิ้นวัน</span>
+                </label>
+            ` : '';
+
             card.innerHTML = `
                 <div>
                     <div class="flex justify-between items-center mb-2">
                         <span class="font-bold text-sm ${item.color}">${item.day}</span>
-                        <label class="flex items-center gap-1 text-[11px] font-semibold text-slate-500 cursor-pointer">
-                            <input type="checkbox" id="${dayMainKey}" ${isDayMainDone ? 'checked' : ''} onchange="toggleWeeklyTaskCheck('${dayMainKey}')" class="w-4 h-4 accent-terracotta-500 rounded cursor-pointer">
-                            <span>เสร็จสิ้นวัน</span>
-                        </label>
+                        ${mainCheckboxHtml}
                     </div>
                     <div class="text-xs font-bold text-slatecustom-800 mb-2.5 ${isDayMainDone ? 'completed-item' : ''}">${item.focus}</div>
                     <div class="space-y-1.5">
                         ${modsChecklistHTML}
                     </div>
                 </div>
-                <div class="text-[10px] text-slate-500 pt-2 border-t border-sand-200">${item.note}</div>
+                <div class="text-[10px] text-slate-500 pt-2 border-t border-sand-200 mt-auto">${item.note}</div>
             `;
 
             grid.appendChild(card);
