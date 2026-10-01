@@ -534,10 +534,10 @@
                 <div class="flex justify-between items-start">
                     <div>
                         <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
-                            <i class="fa-solid fa-stopwatch mr-1"></i> เครื่องมือ Module B
+                            <i class="fa-solid fa-stopwatch mr-1"></i> เครื่องมือ Module B (Max Hang)
                         </span>
-                        <h3 class="font-heading font-bold text-xl text-slatecustom-800">Hangboard Timer & คำนวณภาระนิ้ว (20mm)</h3>
-                        <p class="text-xs text-slate-500 mt-1">คำนวณน้ำหนักที่นิ้วต้องรับ พร้อมไทม์เมอร์และเสียงแจ้งเตือนอัตโนมัติ</p>
+                        <h3 class="font-heading font-bold text-xl text-slatecustom-800">Max Hang Timer & คำนวณภาระนิ้ว (20mm)</h3>
+                        <p class="text-xs text-slate-500 mt-1">คำนวณน้ำหนักที่นิ้วต้องรับ พร้อมไทม์เมอร์และเสียงแจ้งเตือนอัตโนมัติสำหรับการฝึกแรงดึงสูงสุด</p>
                     </div>
                 </div>
 
@@ -603,8 +603,86 @@
                 </div>
             </div>
 
-            <!-- Tool 2: PNF Mobility Timer -->
+            <!-- Tool 1.5: Repeater Timer (NEW) -->
             <div class="lg:col-span-6 bg-white rounded-2xl p-6 border border-sand-200 shadow-sm space-y-6">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="inline-block px-3 py-1 bg-terracotta-500/10 text-terracotta-600 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
+                            <i class="fa-solid fa-stopwatch-20 mr-1"></i> เครื่องมือ Module B (Endurance)
+                        </span>
+                        <h3 class="font-heading font-bold text-xl text-slatecustom-800">Repeater Timer (7s / 3s)</h3>
+                        <p class="text-xs text-slate-500 mt-1">ไทม์เมอร์สำหรับฝึกความทนทานเชิงกำลัง (Power Endurance) แบบโหน 7 วิ พัก 3 วิ</p>
+                    </div>
+                </div>
+
+                <!-- Protocol Details -->
+                <div class="space-y-2 text-xs">
+                    <div class="p-2.5 bg-sand-50 rounded-lg border border-sand-200 flex justify-between items-center">
+                        <span class="font-bold text-slate-700">โปรโตคอล (Protocol):</span>
+                        <span class="text-slate-600">โหน 7 วินาที / พัก 3 วินาที</span>
+                    </div>
+                    <div class="p-2.5 bg-amber-50 rounded-lg border border-amber-200 flex justify-between items-center">
+                        <span class="font-bold text-amber-800">ระดับความหนักแนะนำ:</span>
+                        <span class="text-amber-800">น้ำหนักตัว (Bodyweight)</span>
+                    </div>
+                </div>
+
+                <!-- Repeater Timer Options -->
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">จำนวนครั้งต่อเซต (Reps):</label>
+                        <select id="repeaterRepsSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
+                            <option value="4">4 ครั้ง (ผู้เริ่มต้น)</option>
+                            <option value="6" selected>6 ครั้ง (มาตรฐาน)</option>
+                            <option value="8">8 ครั้ง (ระดับกลาง-สูง)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">จำนวนเซตทั้งหมด:</label>
+                        <select id="repeaterSetsSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
+                            <option value="3">3 เซต</option>
+                            <option value="4" selected>4 เซต</option>
+                            <option value="5">5 เซต</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block font-semibold text-slate-700 mb-1">เวลาพักระหว่างเซต:</label>
+                        <select id="repeaterRestSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
+                            <option value="120">พัก 2 นาที (120s)</option>
+                            <option value="180" selected>พัก 3 นาที (180s - แนะนำ)</option>
+                            <option value="240">พัก 4 นาที (240s)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Repeater Timer Display Panel -->
+                <div class="text-center p-6 bg-slatecustom-800 rounded-xl text-white space-y-4 shadow-inner">
+                    <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slatecustom-700 pb-2">
+                        <div class="flex gap-2">
+                            <span id="repeaterSetDisplay" class="font-bold text-amber-400">เซต: 1/4</span>
+                            <span class="text-slate-500">|</span>
+                            <span id="repeaterRepDisplay" class="font-bold text-teal-400">ครั้ง: 1/6</span>
+                        </div>
+                        <span id="repeaterPhaseBadge" class="px-2.5 py-0.5 rounded bg-terracotta-500 text-white font-semibold">เฟสโหน (WORK 7s)</span>
+                    </div>
+
+                    <div id="repeaterStatus" class="text-sm font-medium tracking-wide uppercase text-amber-400">พร้อมเริ่มต้น Repeater</div>
+                    <div id="repeaterTimerDisplay" class="font-heading text-6xl font-extrabold tracking-tight font-mono text-white">00:07</div>
+                    
+                    <div class="flex justify-center space-x-3 text-xs font-semibold pt-2">
+                        <button id="startRepeaterBtn" onclick="toggleRepeaterTimer()" class="px-5 py-2.5 bg-terracotta-500 hover:bg-terracotta-600 rounded-lg text-white shadow-md transition-transform active:scale-95 flex items-center gap-1.5">
+                            <i class="fa-solid fa-play"></i> เริ่มต้น Repeater
+                        </button>
+                        <button id="resetRepeaterBtn" onclick="resetRepeaterTimer()" class="px-4 py-2.5 bg-slatecustom-700 hover:bg-slatecustom-600 rounded-lg text-slate-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate-left"></i> รีเซ็ต
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Tool 2: PNF Mobility Timer -->
+            <div class="lg:col-span-12 bg-white rounded-2xl p-6 border border-sand-200 shadow-sm space-y-6">
                 <div class="flex justify-between items-start">
                     <div>
                         <span class="inline-block px-3 py-1 bg-olive-600/10 text-olive-700 rounded-full text-xs font-semibold uppercase tracking-wider mb-2">
@@ -632,8 +710,8 @@
                 </div>
 
                 <!-- PNF Timer Options (NEW) -->
-                <div class="grid grid-cols-2 gap-3 text-xs">
-                    <div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                    <div class="md:col-span-2">
                         <label class="block font-semibold text-slate-700 mb-1">เวลาพักระหว่างเซต:</label>
                         <select id="pnfRestSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
                             <option value="45">พัก 45 วินาที (45s)</option>
@@ -641,7 +719,7 @@
                             <option value="90">พัก 1.5 นาที (90s)</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="md:col-span-2">
                         <label class="block font-semibold text-slate-700 mb-1">จำนวนเซตทั้งหมด:</label>
                         <select id="pnfSetsSelect" class="w-full p-2 bg-sand-50 border border-sand-300 rounded-lg text-slate-800 font-medium">
                             <option value="2">2 เซต</option>
@@ -652,7 +730,7 @@
                 </div>
 
                 <!-- PNF Timer Display Panel -->
-                <div class="text-center p-6 bg-slatecustom-800 rounded-xl text-white space-y-4 shadow-inner">
+                <div class="text-center p-6 bg-slatecustom-800 rounded-xl text-white space-y-4 shadow-inner max-w-2xl mx-auto w-full">
                     <div class="flex justify-between items-center text-xs text-slate-400 border-b border-slatecustom-700 pb-2">
                         <span id="pnfSetDisplay" class="font-bold text-emerald-400">รอบที่ 1 / 3</span>
                         <span id="pnfPhaseBadge" class="px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold">เฟสเกร็งต้าน (CONTRACT)</span>
@@ -917,7 +995,6 @@
         }
     ];
 
-    // Days structure for reference
     const daysData = [
         { key: 'mon', name: 'วันจันทร์' },
         { key: 'tue', name: 'วันอังคาร' },
@@ -1427,10 +1504,6 @@
             dayAssignments[selectedDaysKeys[4]] = wTypes.tech;
         }
 
-        // Adjust for consecutive days if possible (simple heuristic)
-        // If days are back-to-back, try not to put two hard days together.
-        // For a more robust algorithm, we'd check indices. For now, we use the assignment map.
-
         const scheduleData = daysData.map(dayInfo => {
             const assignment = dayAssignments[dayInfo.key] || wTypes.rest;
             return {
@@ -1602,13 +1675,14 @@
         renderMacrocycleChart();
     }
 
-    // Hangboard Load Calculator & Timer Logic
+    // Hangboard Load Calculator & Timer Logic (Max Hang)
     let hangTimer = null;
     let hangTimeLeft = 10;
     let isHangWorkState = true;
     let hangSetCurrent = 1;
     let hangSetTotal = 6;
     let isHangRunning = false;
+    let hangRestDuration = 120; // Default 2 mins
 
     function updateCalculatorBW() {
         const bwInput = document.getElementById('calcBW');
@@ -1641,93 +1715,252 @@
             btn.innerHTML = `<i class="fa-solid fa-pause"></i> หยุดชั่วคราว`;
             btn.classList.remove('bg-terracotta-500', 'hover:bg-terracotta-600');
             btn.classList.add('bg-amber-600', 'hover:bg-amber-700');
-
-            hangSetTotal = parseInt(document.getElementById('hangSetsSelect').value) || 6;
-
-            hangTimer = setInterval(() => {
-                hangTimeLeft--;
+            
+            // Read settings on first start
+            if (hangSetCurrent === 1 && hangTimeLeft === 10 && isHangWorkState) {
+                hangSetTotal = parseInt(document.getElementById('hangSetsSelect').value);
+                hangRestDuration = parseInt(document.getElementById('hangRestSelect').value);
                 updateHangDisplay();
+            }
 
-                // Sound alerts for countdown
-                if (hangTimeLeft > 0 && hangTimeLeft <= 3) {
-                    playBeepSound('countdown');
-                }
-
-                if (hangTimeLeft <= 0) {
-                    if (isHangWorkState) {
-                        playBeepSound('high');
-                        // Switch to Rest Phase
-                        isHangWorkState = false;
-                        hangTimeLeft = parseInt(document.getElementById('hangRestSelect').value) || 120;
-                        document.getElementById('hangStatus').innerText = "ช่วงพักผ่อน (REST PHASE)";
-                        document.getElementById('hangStatus').className = "text-sm font-medium tracking-wide uppercase text-blue-400";
-                        document.getElementById('hangPhaseBadge').innerText = "พักสมบูรณ์ (REST)";
-                        document.getElementById('hangPhaseBadge').className = "px-2.5 py-0.5 rounded bg-blue-600 text-white font-semibold";
-                    } else {
-                        // Switch to Work Phase
-                        hangSetCurrent++;
-                        if (hangSetCurrent > hangSetTotal) {
-                            playBeepSound('complete');
-                            resetHangTimer();
-                            document.getElementById('hangStatus').innerText = "จบเซสชัน Hangboard เรียบร้อย!";
-                            return;
-                        }
-                        playBeepSound('high');
-                        isHangWorkState = true;
-                        hangTimeLeft = 10;
-                        document.getElementById('hangStatus').innerText = "ช่วงโหนค้าง (HANG PHASE)";
-                        document.getElementById('hangStatus').className = "text-sm font-medium tracking-wide uppercase text-amber-400";
-                        document.getElementById('hangPhaseBadge').innerText = "เฟสโหนนิ้ว (WORK)";
-                        document.getElementById('hangPhaseBadge').className = "px-2.5 py-0.5 rounded bg-terracotta-500 text-white font-semibold";
-                        document.getElementById('hangSetDisplay').innerText = `เซตที่ ${hangSetCurrent} / ${hangSetTotal}`;
-                    }
-                }
-            }, 1000);
+            hangTimer = setInterval(updateHangTimer, 1000);
         }
+    }
+
+    function updateHangTimer() {
+        hangTimeLeft--;
+
+        // Play countdown beeps for last 3 seconds
+        if (hangTimeLeft > 0 && hangTimeLeft <= 3) {
+            playBeepSound('countdown');
+        }
+
+        if (hangTimeLeft <= 0) {
+            if (isHangWorkState) {
+                // Work phase ended, switch to rest
+                playBeepSound('high');
+                isHangWorkState = false;
+                hangTimeLeft = hangRestDuration;
+                document.getElementById('hangPhaseBadge').className = 'px-2.5 py-0.5 rounded bg-blue-500 text-white font-semibold';
+                document.getElementById('hangPhaseBadge').innerText = 'เฟสพัก (REST)';
+                document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-blue-400';
+                document.getElementById('hangStatus').innerText = 'พักฟื้นตัวเตรียมเซตถัดไป';
+            } else {
+                // Rest phase ended, switch to next set or finish
+                if (hangSetCurrent >= hangSetTotal) {
+                    // Finished all sets
+                    playBeepSound('complete');
+                    resetHangTimer();
+                    alert("ยินดีด้วย! คุณทำ Max Hang ครบทุกเซตแล้ว");
+                    return;
+                }
+                
+                // Next set
+                playBeepSound('phase');
+                hangSetCurrent++;
+                isHangWorkState = true;
+                hangTimeLeft = 10; // Fixed 10s work for max hang
+                document.getElementById('hangPhaseBadge').className = 'px-2.5 py-0.5 rounded bg-terracotta-500 text-white font-semibold';
+                document.getElementById('hangPhaseBadge').innerText = 'เฟสโหนนิ้ว (WORK)';
+                document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-amber-400';
+                document.getElementById('hangStatus').innerText = 'โหนค้าง 10s';
+            }
+        }
+        updateHangDisplay();
     }
 
     function updateHangDisplay() {
         const mins = Math.floor(hangTimeLeft / 60);
         const secs = hangTimeLeft % 60;
-        document.getElementById('hangTimerDisplay').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        document.getElementById('hangTimerDisplay').innerText = 
+            `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        document.getElementById('hangSetDisplay').innerText = `เซตที่ ${hangSetCurrent} / ${hangSetTotal}`;
     }
 
     function resetHangTimer() {
         clearInterval(hangTimer);
         isHangRunning = false;
         isHangWorkState = true;
-        hangSetCurrent = 1;
         hangTimeLeft = 10;
-        hangSetTotal = parseInt(document.getElementById('hangSetsSelect').value) || 6;
-
-        document.getElementById('hangSetDisplay').innerText = `เซตที่ 1 / ${hangSetTotal}`;
-        document.getElementById('hangStatus').innerText = "พร้อมเริ่มต้น (โหนค้าง 10s)";
-        document.getElementById('hangStatus').className = "text-sm font-medium tracking-wide uppercase text-amber-400";
-        document.getElementById('hangPhaseBadge').innerText = "เฟสโหนนิ้ว (WORK)";
-        document.getElementById('hangPhaseBadge').className = "px-2.5 py-0.5 rounded bg-terracotta-500 text-white font-semibold";
+        hangSetCurrent = 1;
         
         const btn = document.getElementById('startHangBtn');
         btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น`;
         btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
         btn.classList.add('bg-terracotta-500', 'hover:bg-terracotta-600');
         
+        document.getElementById('hangPhaseBadge').className = 'px-2.5 py-0.5 rounded bg-terracotta-500 text-white font-semibold';
+        document.getElementById('hangPhaseBadge').innerText = 'เฟสโหนนิ้ว (WORK)';
+        document.getElementById('hangStatus').className = 'text-sm font-medium tracking-wide uppercase text-amber-400';
+        document.getElementById('hangStatus').innerText = 'พร้อมเริ่มต้น (โหนค้าง 10s)';
+        
+        // Read potentially new select values
+        hangSetTotal = parseInt(document.getElementById('hangSetsSelect').value);
+        
         updateHangDisplay();
     }
 
-    // PNF Stretch Timer Logic (UPDATED)
+    // Repeater Timer Logic (7s/3s)
+    let repeaterTimer = null;
+    let repeaterTimeLeft = 7; // Start with 7s work
+    let isRepeaterWorkState = true;
+    let repeaterRepCurrent = 1;
+    let repeaterRepTotal = 6;
+    let repeaterSetCurrent = 1;
+    let repeaterSetTotal = 4;
+    let repeaterRestDuration = 180;
+    let isRepeaterRunning = false;
+
+    function toggleRepeaterTimer() {
+        initAudioContext();
+        const btn = document.getElementById('startRepeaterBtn');
+        if (isRepeaterRunning) {
+            clearInterval(repeaterTimer);
+            isRepeaterRunning = false;
+            btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต่อ`;
+            btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
+            btn.classList.add('bg-terracotta-500', 'hover:bg-terracotta-600');
+        } else {
+            isRepeaterRunning = true;
+            btn.innerHTML = `<i class="fa-solid fa-pause"></i> หยุดชั่วคราว`;
+            btn.classList.remove('bg-terracotta-500', 'hover:bg-terracotta-600');
+            btn.classList.add('bg-amber-600', 'hover:bg-amber-700');
+            
+            // Read settings on first start
+            if (repeaterSetCurrent === 1 && repeaterRepCurrent === 1 && repeaterTimeLeft === 7 && isRepeaterWorkState) {
+                repeaterRepTotal = parseInt(document.getElementById('repeaterRepsSelect').value);
+                repeaterSetTotal = parseInt(document.getElementById('repeaterSetsSelect').value);
+                repeaterRestDuration = parseInt(document.getElementById('repeaterRestSelect').value);
+                updateRepeaterDisplay();
+            }
+
+            repeaterTimer = setInterval(updateRepeaterTimer, 1000);
+        }
+    }
+
+    function updateRepeaterTimer() {
+        repeaterTimeLeft--;
+
+        // Short beep for countdown (1s left for fast transitions like 3s rest)
+        if (repeaterTimeLeft === 1) {
+             playBeepSound('countdown'); // just a quick blip before change
+        }
+
+        if (repeaterTimeLeft <= 0) {
+            // Determine phase change
+            if (isRepeaterWorkState) {
+                // Finished a 7s Hang -> Go to 3s Rest (or full set rest if last rep)
+                isRepeaterWorkState = false;
+                
+                if (repeaterRepCurrent >= repeaterRepTotal) {
+                    // Finished last rep of the set -> Go to Set Rest
+                    playBeepSound('high');
+                    repeaterTimeLeft = repeaterRestDuration;
+                    setRepeaterUIState('set_rest');
+                } else {
+                    // Normal inter-rep rest
+                    playBeepSound('short'); // distinct short sound for quick drop
+                    repeaterTimeLeft = 3;
+                    setRepeaterUIState('rep_rest');
+                }
+            } else {
+                // Finished a Rest phase (either 3s or Set Rest)
+                if (repeaterRepCurrent >= repeaterRepTotal) {
+                    // Was resting between sets
+                    if (repeaterSetCurrent >= repeaterSetTotal) {
+                        // Entire workout finished!
+                        playBeepSound('complete');
+                        resetRepeaterTimer();
+                        alert("ยอดเยี่ยม! คุณทำ Repeater Protocol จบครบแล้ว ความทนทานกำลังของคุณเพิ่มขึ้นแน่นอน");
+                        return;
+                    } else {
+                        // Start next set
+                        playBeepSound('phase');
+                        repeaterSetCurrent++;
+                        repeaterRepCurrent = 1;
+                        isRepeaterWorkState = true;
+                        repeaterTimeLeft = 7;
+                        setRepeaterUIState('work');
+                    }
+                } else {
+                    // Finished 3s rest -> Go to next Rep (7s Hang)
+                    playBeepSound('phase');
+                    repeaterRepCurrent++;
+                    isRepeaterWorkState = true;
+                    repeaterTimeLeft = 7;
+                    setRepeaterUIState('work');
+                }
+            }
+        }
+        updateRepeaterDisplay();
+    }
+
+    function setRepeaterUIState(state) {
+        const badge = document.getElementById('repeaterPhaseBadge');
+        const status = document.getElementById('repeaterStatus');
+        
+        if (state === 'work') {
+            badge.className = 'px-2.5 py-0.5 rounded bg-terracotta-500 text-white font-semibold';
+            badge.innerText = 'เฟสโหน (WORK 7s)';
+            status.className = 'text-sm font-medium tracking-wide uppercase text-amber-400';
+            status.innerText = `โหนค้าง ${repeaterTimeLeft}s`;
+        } else if (state === 'rep_rest') {
+            badge.className = 'px-2.5 py-0.5 rounded bg-yellow-500 text-white font-semibold';
+            badge.innerText = 'พักสั้น (REST 3s)';
+            status.className = 'text-sm font-medium tracking-wide uppercase text-yellow-400';
+            status.innerText = 'ปล่อยมือพักสั้น';
+        } else if (state === 'set_rest') {
+            badge.className = 'px-2.5 py-0.5 rounded bg-blue-500 text-white font-semibold';
+            badge.innerText = 'พักระหว่างเซต (SET REST)';
+            status.className = 'text-sm font-medium tracking-wide uppercase text-blue-400';
+            status.innerText = 'พักฟื้นแขนให้เต็มที่';
+        }
+    }
+
+    function updateRepeaterDisplay() {
+        const mins = Math.floor(repeaterTimeLeft / 60);
+        const secs = repeaterTimeLeft % 60;
+        document.getElementById('repeaterTimerDisplay').innerText = 
+            `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        document.getElementById('repeaterSetDisplay').innerText = `เซต: ${repeaterSetCurrent}/${repeaterSetTotal}`;
+        document.getElementById('repeaterRepDisplay').innerText = `ครั้ง: ${repeaterRepCurrent}/${repeaterRepTotal}`;
+    }
+
+    function resetRepeaterTimer() {
+        clearInterval(repeaterTimer);
+        isRepeaterRunning = false;
+        isRepeaterWorkState = true;
+        repeaterTimeLeft = 7;
+        repeaterSetCurrent = 1;
+        repeaterRepCurrent = 1;
+        
+        // Refresh values from selects
+        repeaterRepTotal = parseInt(document.getElementById('repeaterRepsSelect').value);
+        repeaterSetTotal = parseInt(document.getElementById('repeaterSetsSelect').value);
+        
+        const btn = document.getElementById('startRepeaterBtn');
+        btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น Repeater`;
+        btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
+        btn.classList.add('bg-terracotta-500', 'hover:bg-terracotta-600');
+        
+        setRepeaterUIState('work');
+        document.getElementById('repeaterStatus').innerText = 'พร้อมเริ่มต้น Repeater';
+        
+        updateRepeaterDisplay();
+    }
+
+    // PNF Mobility Timer Logic
     let pnfTimer = null;
-    let pnfTimeLeft = 7;
-    let pnfPhaseState = 'contract'; // 'contract' -> 'stretch' -> 'rest'
-    let isPnfRunning = false;
+    let pnfTimeLeft = 7; // Start with 7s contract
+    let pnfPhase = 'contract'; // 'contract', 'relax', 'rest'
     let pnfSetCurrent = 1;
     let pnfSetTotal = 3;
+    let pnfRestDuration = 60;
+    let isPnfRunning = false;
 
     function togglePNFTimer() {
         initAudioContext();
         const btn = document.getElementById('startPnfBtn');
-        const statusLabel = document.getElementById('pnfStatus');
-        const phaseBadge = document.getElementById('pnfPhaseBadge');
-
         if (isPnfRunning) {
             clearInterval(pnfTimer);
             isPnfRunning = false;
@@ -1739,101 +1972,94 @@
             btn.innerHTML = `<i class="fa-solid fa-pause"></i> หยุดชั่วคราว`;
             btn.classList.remove('bg-olive-600', 'hover:bg-olive-700');
             btn.classList.add('bg-amber-600', 'hover:bg-amber-700');
-
-            pnfSetTotal = parseInt(document.getElementById('pnfSetsSelect').value) || 3;
-
-            if (pnfPhaseState === 'contract' && pnfTimeLeft === 7 && pnfSetCurrent === 1) {
-                 document.getElementById('pnfSetDisplay').innerText = `รอบที่ ${pnfSetCurrent} / ${pnfSetTotal}`;
+            
+            // Read settings on first start
+            if (pnfSetCurrent === 1 && pnfTimeLeft === 7 && pnfPhase === 'contract') {
+                pnfSetTotal = parseInt(document.getElementById('pnfSetsSelect').value);
+                pnfRestDuration = parseInt(document.getElementById('pnfRestSelect').value);
+                updatePNFDisplay();
             }
 
-            pnfTimer = setInterval(() => {
-                pnfTimeLeft--;
-                updatePNFDisplay();
-
-                if (pnfTimeLeft > 0 && pnfTimeLeft <= 3) {
-                    playBeepSound('countdown');
-                }
-
-                if (pnfTimeLeft <= 0) {
-                    if (pnfPhaseState === 'contract') {
-                        // Switch from Contract to Stretch
-                        playBeepSound('high');
-                        pnfPhaseState = 'stretch';
-                        pnfTimeLeft = 30;
-                        statusLabel.innerText = "ผ่อนคลายและกดสะโพกลึกลงอีก 30 วินาที!";
-                        statusLabel.className = "text-sm font-medium tracking-wide uppercase text-emerald-400";
-                        phaseBadge.innerText = "ยืดผ่อนลึก (STRETCH)";
-                        phaseBadge.className = "px-2.5 py-0.5 rounded bg-emerald-600 text-white font-semibold";
-                    } else if (pnfPhaseState === 'stretch') {
-                        // Check if it's the final set
-                        if (pnfSetCurrent >= pnfSetTotal) {
-                            playBeepSound('complete');
-                            resetPNFTimer();
-                            statusLabel.innerText = "จบครบรอบ PNF แล้ว!";
-                            return;
-                        } else {
-                            // Switch to Rest phase between sets
-                            playBeepSound('high');
-                            pnfPhaseState = 'rest';
-                            pnfTimeLeft = parseInt(document.getElementById('pnfRestSelect').value) || 60;
-                            statusLabel.innerText = "พักก่อนเริ่มรอบถัดไป";
-                            statusLabel.className = "text-sm font-medium tracking-wide uppercase text-blue-400";
-                            phaseBadge.innerText = "พักสมบูรณ์ (REST)";
-                            phaseBadge.className = "px-2.5 py-0.5 rounded bg-blue-600 text-white font-semibold";
-                        }
-                    } else if (pnfPhaseState === 'rest') {
-                        // Switch from Rest back to Contract for the next set
-                        playBeepSound('high');
-                        pnfSetCurrent++;
-                        pnfPhaseState = 'contract';
-                        pnfTimeLeft = 7;
-                        
-                        document.getElementById('pnfSetDisplay').innerText = `รอบที่ ${pnfSetCurrent} / ${pnfSetTotal}`;
-                        statusLabel.innerText = "กดเข่าลงพื้นออกแรงเกร็งต้าน 7 วินาที!";
-                        statusLabel.className = "text-sm font-medium tracking-wide uppercase text-amber-400";
-                        phaseBadge.innerText = "เกร็งต้าน (CONTRACT)";
-                        phaseBadge.className = "px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold";
-                    }
-                }
-            }, 1000);
+            pnfTimer = setInterval(updatePNFTimer, 1000);
         }
+    }
+
+    function updatePNFTimer() {
+        pnfTimeLeft--;
+
+        if (pnfTimeLeft > 0 && pnfTimeLeft <= 3 && pnfPhase !== 'rest') {
+            playBeepSound('countdown');
+        }
+
+        if (pnfTimeLeft <= 0) {
+            if (pnfPhase === 'contract') {
+                // Finished 7s contract, move to 30s relax
+                playBeepSound('high');
+                pnfPhase = 'relax';
+                pnfTimeLeft = 30;
+                document.getElementById('pnfPhaseBadge').className = 'px-2.5 py-0.5 rounded bg-emerald-500 text-white font-semibold';
+                document.getElementById('pnfPhaseBadge').innerText = 'เฟสผ่อนคลาย (RELAX & STRETCH)';
+                document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-emerald-400';
+                document.getElementById('pnfStatus').innerText = 'หายใจออก ทิ้งสะโพกลงลึก 30s';
+            } else if (pnfPhase === 'relax') {
+                // Finished 30s relax, move to rest
+                if (pnfSetCurrent >= pnfSetTotal) {
+                    playBeepSound('complete');
+                    resetPNFTimer();
+                    alert("ยอดเยี่ยม! ทำ PNF Stretch ครบทุกเซตแล้ว สะโพกคุณยืดหยุ่นขึ้นแน่นอน");
+                    return;
+                }
+                playBeepSound('phase');
+                pnfPhase = 'rest';
+                pnfTimeLeft = pnfRestDuration;
+                document.getElementById('pnfPhaseBadge').className = 'px-2.5 py-0.5 rounded bg-blue-500 text-white font-semibold';
+                document.getElementById('pnfPhaseBadge').innerText = 'เฟสพัก (REST)';
+                document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-blue-400';
+                document.getElementById('pnfStatus').innerText = 'คลายท่า พักฟื้นกล้ามเนื้อ';
+            } else if (pnfPhase === 'rest') {
+                // Finished rest, move to next set contract
+                playBeepSound('phase');
+                pnfSetCurrent++;
+                pnfPhase = 'contract';
+                pnfTimeLeft = 7;
+                document.getElementById('pnfPhaseBadge').className = 'px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold';
+                document.getElementById('pnfPhaseBadge').innerText = 'เฟสเกร็งต้าน (CONTRACT)';
+                document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-amber-400';
+                document.getElementById('pnfStatus').innerText = 'จัดท่า & เกร็งเข่ากดพื้น 70% 7s';
+            }
+        }
+        updatePNFDisplay();
     }
 
     function updatePNFDisplay() {
         const mins = Math.floor(pnfTimeLeft / 60);
         const secs = pnfTimeLeft % 60;
-        document.getElementById('pnfTimerDisplay').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        document.getElementById('pnfTimerDisplay').innerText = 
+            `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        document.getElementById('pnfSetDisplay').innerText = `รอบที่ ${pnfSetCurrent} / ${pnfSetTotal}`;
     }
 
     function resetPNFTimer() {
         clearInterval(pnfTimer);
         isPnfRunning = false;
-        pnfPhaseState = 'contract';
+        pnfPhase = 'contract';
         pnfTimeLeft = 7;
         pnfSetCurrent = 1;
-        pnfSetTotal = parseInt(document.getElementById('pnfSetsSelect').value) || 3;
-        
-        document.getElementById('pnfSetDisplay').innerText = `รอบที่ ${pnfSetCurrent} / ${pnfSetTotal}`;
-        document.getElementById('pnfStatus').innerText = "เตรียมพร้อมจัดท่า Frog Stretch";
-        document.getElementById('pnfStatus').className = "text-sm font-medium tracking-wide uppercase text-emerald-400";
-        document.getElementById('pnfPhaseBadge').innerText = "เฟสเกร็งต้าน (CONTRACT)";
-        document.getElementById('pnfPhaseBadge').className = "px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold";
         
         const btn = document.getElementById('startPnfBtn');
-        if (btn) {
-            btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น PNF`;
-            btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
-            btn.classList.add('bg-olive-600', 'hover:bg-olive-700');
-        }
+        btn.innerHTML = `<i class="fa-solid fa-play"></i> เริ่มต้น PNF`;
+        btn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
+        btn.classList.add('bg-olive-600', 'hover:bg-olive-700');
+        
+        document.getElementById('pnfPhaseBadge').className = 'px-2.5 py-0.5 rounded bg-amber-500 text-white font-semibold';
+        document.getElementById('pnfPhaseBadge').innerText = 'เฟสเกร็งต้าน (CONTRACT)';
+        document.getElementById('pnfStatus').className = 'text-sm font-medium tracking-wide uppercase text-emerald-400';
+        document.getElementById('pnfStatus').innerText = 'เตรียมพร้อมจัดท่า Frog Stretch';
+        
+        pnfSetTotal = parseInt(document.getElementById('pnfSetsSelect').value);
         updatePNFDisplay();
     }
-
-    // Initialize App on DOM Ready
-    document.addEventListener('DOMContentLoaded', () => {
-        renderModules();
-        renderWeeklySchedule();
-        calculateHangLoad();
-    });
 </script>
+
 </body>
 </html>
